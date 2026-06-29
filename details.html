@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Details — HindiAnimeStuff</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+  --void:#0b0714;
+  --card:#161025;
+  --card-hover:#201634;
+  --ember:#2d8f73;
+  --blood:#7c3aed;
+  --blood-bright:#b26cff;
+  --bone:#f5f3ff;
+  --bone-dim:#b7b2d6;
+  --gold:#3ddc97;
+}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--void);
+    color:var(--bone);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  body::before{
+    content:'';
+    position:fixed;
+    inset:0;
+    background:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(158,27,27,0.18), transparent 60%);
+    pointer-events:none;
+    z-index:0;
+  }
+  .topbar{
+    position:relative;z-index:1;
+    padding:20px 24px;
+    border-bottom:1px solid var(--ember);
+  }
+  .back{
+    color:var(--bone-dim);
+    text-decoration:none;
+    font-size:0.85rem;
+    letter-spacing:0.03em;
+    font-weight:500;
+    transition:color 0.2s ease;
+  }
+  .back:hover{color:var(--blood-bright);}
+
+  main{
+    position:relative;z-index:1;
+    max-width:920px;
+    margin:0 auto;
+    padding:48px 24px 90px;
+  }
+
+  .hero{
+    display:flex;
+    gap:36px;
+    flex-wrap:wrap;
+  }
+  .poster{
+    flex:0 0 260px;
+    width:260px;
+    aspect-ratio:2/3;
+    border-radius:10px;
+    overflow:hidden;
+    border:1px solid var(--ember);
+    background:linear-gradient(160deg,#2a1414,#160a0a);
+    position:relative;
+    box-shadow:0 20px 50px -10px rgba(0,0,0,0.6);
+  }
+  .poster img{width:100%;height:100%;object-fit:cover;display:block;position:relative;z-index:1;}
+  .poster-fallback{
+    position:absolute;inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Bebas Neue',sans-serif;
+    font-size:2.5rem;
+    color:var(--blood-bright);
+    opacity:0.4;
+  }
+
+  .info{flex:1;min-width:280px;}
+  .season-tag{
+    font-size:0.78rem;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--gold);
+    font-weight:700;
+  }
+  h1{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(2.1rem,5vw,3.2rem);
+    letter-spacing:0.01em;
+    line-height:1.05;
+    margin:8px 0 16px;
+  }
+  .rating-row{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:18px;
+  }
+  .rating-badge{
+    display:inline-flex;
+    align-items:baseline;
+    gap:4px;
+    font-family:'Bebas Neue',sans-serif;
+    font-size:1.7rem;
+    color:var(--blood-bright);
+  }
+  .rating-badge sub{
+    font-family:'Inter',sans-serif;
+    font-size:0.7rem;
+    color:var(--bone-dim);
+  }
+  .genre-tags{display:flex;gap:6px;flex-wrap:wrap;}
+  .genre-tag{
+    font-size:0.68rem;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:var(--bone-dim);
+    border:1px solid var(--ember);
+    padding:3px 10px;
+    border-radius:100px;
+  }
+
+  .synopsis{
+    color:var(--bone-dim);
+    line-height:1.65;
+    font-size:0.96rem;
+    margin-bottom:26px;
+    max-width:560px;
+  }
+
+  .spec-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px 28px;
+    margin-bottom:30px;
+  }
+  .spec{
+    border-left:2px solid var(--blood);
+    padding-left:12px;
+  }
+  .spec-label{
+    font-size:0.66rem;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--bone-dim);
+  }
+  .spec-value{
+    font-size:0.92rem;
+    margin-top:3px;
+    font-weight:500;
+  }
+
+  .watch-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    background:var(--blood-bright);
+    color:#0c0a0a;
+    font-weight:700;
+    text-decoration:none;
+    padding:15px 30px;
+    border-radius:6px;
+    font-size:0.95rem;
+    letter-spacing:0.02em;
+    transition:background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow:0 8px 24px -8px rgba(214,44,44,0.5);
+  }
+  .watch-btn:hover{
+    background:#ef4040;
+    transform:translateY(-2px);
+    box-shadow:0 12px 28px -8px rgba(214,44,44,0.65);
+  }
+  .platform-note{
+    margin-top:12px;
+    font-size:0.78rem;
+    color:var(--bone-dim);
+  }
+
+  .more-seasons{
+    margin-top:48px;
+    padding-top:28px;
+    border-top:1px solid var(--ember);
+  }
+  .more-seasons-title{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:1.1rem;
+    letter-spacing:0.02em;
+    margin-bottom:14px;
+    color:var(--bone-dim);
+  }
+  .season-pills{display:flex;gap:8px;flex-wrap:wrap;}
+  .season-pill{
+    font-size:0.78rem;
+    font-weight:600;
+    color:var(--bone-dim);
+    border:1px solid var(--ember);
+    padding:8px 16px;
+    border-radius:6px;
+    text-decoration:none;
+    transition:all 0.2s ease;
+  }
+  .season-pill:hover{border-color:var(--blood-bright);color:var(--bone);}
+  .season-pill.current{
+    background:var(--blood-bright);
+    border-color:var(--blood-bright);
+    color:#0c0a0a;
+  }
+
+  @media (max-width:560px){
+    .poster{flex:0 0 100%;width:100%;max-width:240px;margin:0 auto;}
+    .spec-grid{grid-template-columns:1fr;}
+    .info{text-align:left;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html" class="back">← Back to catalog</a>
+</div>
+
+<main id="detail"></main>
+
+<script src="data.js"></script>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  const item = ANIME_DATA.find(a => a.id === id);
+  const root = document.getElementById('detail');
+
+  if(!item){
+    root.innerHTML = `<p style="color:var(--bone-dim)">Title not found. <a href="index.html" style="color:var(--blood-bright)">Go back</a>.</p>`;
+  } else {
+    document.title = `${item.title} ${item.season} — HindiAnimeStuff`;
+
+    const franchiseKey = item.franchise || item.title;
+    const siblings = ANIME_DATA.filter(a => (a.franchise || a.title) === franchiseKey);
+
+    root.innerHTML = `
+      <div class="hero">
+        <div class="poster">
+          <div class="poster-fallback">${item.season}</div>
+          <img src="${item.thumb}" alt="${item.title} ${item.season}" onerror="this.style.display='none'">
+        </div>
+        <div class="info">
+          <span class="season-tag">${item.season}</span>
+          <h1>${item.title}</h1>
+          <div class="rating-row">
+            <div class="rating-badge">★ ${item.rating}<sub>/10</sub></div>
+            <div class="genre-tags">${item.genres.map(g => `<span class="genre-tag">${g}</span>`).join('')}</div>
+          </div>
+          <p class="synopsis">${item.synopsis}</p>
+
+          <div class="spec-grid">
+            <div class="spec"><div class="spec-label">Run</div><div class="spec-value">${item.run}</div></div>
+            <div class="spec"><div class="spec-label">Episode Length</div><div class="spec-value">${item.runtime}</div></div>
+            <div class="spec"><div class="spec-label">Episodes</div><div class="spec-value">${item.episodes ?? '—'}</div></div>
+            <div class="spec"><div class="spec-label">Language</div><div class="spec-value">${item.language}</div></div>
+            <div class="spec"><div class="spec-label">Subtitles</div><div class="spec-value">${item.subtitle}</div></div>
+            <div class="spec"><div class="spec-label">Quality</div><div class="spec-value">${item.quality}</div></div>
+          </div>
+
+          <a class="watch-btn" href="${item.platformUrl}" target="_blank" rel="noopener">Download From ${item.platform} →</a>
+          <div class="platform-note">Opens the official ${item.platform} page in a new tab.</div>
+
+          ${siblings.length > 1 ? `
+          <div class="more-seasons">
+            <div class="more-seasons-title">More from this series</div>
+            <div class="season-pills">
+              ${siblings.map(s => `<a class="season-pill ${s.id === item.id ? 'current' : ''}" href="details.html?id=${s.id}">${s.season}</a>`).join('')}
+            </div>
+          </div>` : ''}
+        </div>
+      </div>
+    `;
+  }
+</script>
+
+</body>
+</html>
+

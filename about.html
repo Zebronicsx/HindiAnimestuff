@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Follow Us • HindiAnimeStuff</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+html{
+scroll-behavior:smooth;
+}
+
+body{
+
+background:
+linear-gradient(rgba(8,8,18,.82),rgba(8,8,18,.92)),
+url("https://i.ibb.co/DDQYHzX7/pu-OZ4-Jr-U.jpg");
+
+background-size:cover;
+background-position:center;
+background-attachment:fixed;
+color:#fff;
+
+}
+
+.container{
+
+width:min(1200px,92%);
+margin:auto;
+
+}
+
+.hero{
+
+padding:70px 0 45px;
+
+}
+
+.badge{
+
+display:inline-flex;
+align-items:center;
+gap:10px;
+
+padding:10px 18px;
+
+border:1px solid #7a3cff;
+
+border-radius:60px;
+
+background:rgba(255,255,255,.05);
+
+backdrop-filter:blur(15px);
+
+font-size:14px;
+
+font-weight:600;
+
+margin-bottom:28px;
+
+}
+
+.badge i{
+
+color:#b97cff;
+
+}
+
+.hero h1{
+
+font-size:76px;
+
+font-weight:800;
+
+line-height:82px;
+
+letter-spacing:-2px;
+
+}
+
+.hero h1 span{
+
+display:block;
+
+background:linear-gradient(90deg,#17ff9d,#00d0ff);
+
+-webkit-background-clip:text;
+
+-webkit-text-fill-color:transparent;
+
+}
+
+.subtitle{
+
+margin-top:24px;
+
+font-size:22px;
+
+line-height:36px;
+
+color:#ddd;
+
+max-width:650px;
+
+}
+
+.subtitle b{
+
+color:#1fff97;
+
+}
+
+.stats{
+
+margin-top:45px;
+
+display:grid;
+
+grid-template-columns:
+repeat(3,1fr);
+
+gap:18px;
+
+}
+
+.stat{
+
+display:flex;
+
+align-items:center;
+
+gap:16px;
+
+padding:20px;
+
+border-radius:20px;
+
+background:rgba(255,255,255,.05);
+
+border:1px solid rgba(255,255,255,.08);
+
+backdrop-filter:blur(18px);
+
+}
+
+.stat i{
+
+width:58px;
+height:58px;
+
+display:grid;
+place-items:center;
+
+border-radius:50%;
+
+font-size:24px;
+
+background:linear-gradient(135deg,#742fff,#15ff8d);
+
+}
+
+.stat h3{
+
+font-size:34px;
+
+}
+
+.stat p{
+
+opacity:.8;
+
+}
+
+.cards{
+
+margin-top:55px;
+
+display:grid;
+
+grid-template-columns:
+repeat(auto-fit,minmax(290px,1fr));
+
+gap:25px;
+
+}
+
+.card{
+
+padding:32px;
+
+border-radius:28px;
+
+background:rgba(255,255,255,.05);
+
+border:1px solid rgba(255,255,255,.08);
+
+backdrop-filter:blur(18px);
+
+transition:.35s;
+
+position:relative;
+
+overflow:hidden;
+
+}
+
+.card:hover{
+
+transform:translateY(-10px);
+
+border-color:#18ff9d;
+
+box-shadow:0 20px 55px rgba(0,0,0,.35);
+
+}
+
+.card::before{
+
+content:"";
+
+position:absolute;
+
+width:200px;
+
+height:200px;
+
+background:radial-gradient(#7b35ff55,transparent);
+
+top:-100px;
+right:-100px;
+
+}
+
+.social-icon{
+
+width:78px;
+
+height:78px;
+
+border-radius:22px;
+
+display:grid;
+
+place-items:center;
+
+font-size:38px;
+
+margin-bottom:22px;
+
+}
+
+.telegram{
+
+background:#27A7E755;
+
+color:#33b7ff;
+
+}
+
+.instagram{
+
+background:#ff008855;
+
+color:#ff71bf;
+
+}
+
+.pinterest{
+
+background:#ff2d2d55;
+
+color:#ff4343;
+
+}
+
+.youtube{
+
+background:#ff000055;
+
+color:#ff3a3a;
+
+}
+
+.card h2{
+
+font-size:31px;
+
+margin-bottom:14px;
+
+}
+
+.card p{
+
+line-height:31px;
+
+opacity:.88;
+
+margin-bottom:30px;
+
+}
+
+.btn{
+
+display:inline-flex;
+
+align-items:center;
+
+gap:12px;
+
+padding:15px 30px;
+
+border-radius:60px;
+
+text-decoration:none;
+
+font-weight:700;
+
+transition:.35s;
+
+color:#fff;
+
+}
+  .btn:hover{
+
+transform:translateY(-4px);
+
+box-shadow:0 15px 35px rgba(0,0,0,.35);
+
+}
+
+.btn.telegram-btn{
+
+background:linear-gradient(135deg,#18b8ff,#008cff);
+
+}
+
+.btn.instagram-btn{
+
+background:linear-gradient(135deg,#ffb347,#ff006e,#7b2cff);
+
+}
+
+.btn.pinterest-btn{
+
+background:linear-gradient(135deg,#ff2d2d,#d10000);
+
+}
+
+.btn.youtube-btn{
+
+background:linear-gradient(135deg,#ff3030,#d60000);
+
+}
+
+.community{
+
+margin:70px 0;
+
+padding:35px;
+
+border-radius:30px;
+
+display:flex;
+
+align-items:center;
+
+justify-content:space-between;
+
+gap:30px;
+
+background:rgba(0,255,170,.06);
+
+border:1px solid rgba(0,255,170,.25);
+
+backdrop-filter:blur(18px);
+
+}
+
+.community-left{
+
+display:flex;
+
+align-items:center;
+
+gap:25px;
+
+}
+
+.community img{
+
+width:120px;
+
+height:120px;
+
+border-radius:50%;
+
+border:3px solid #22ff9c;
+
+object-fit:cover;
+
+}
+
+.community h2{
+
+font-size:46px;
+
+margin-bottom:10px;
+
+}
+
+.community h2 span{
+
+color:#1cff95;
+
+}
+
+.community p{
+
+font-size:19px;
+
+color:#ddd;
+
+line-height:32px;
+
+max-width:620px;
+
+}
+
+.community .btn{
+
+margin-top:22px;
+
+background:linear-gradient(135deg,#15ff8d,#00d6ff);
+
+color:#111;
+
+}
+
+footer{
+
+padding:25px 0 40px;
+
+text-align:center;
+
+color:#bfbfbf;
+
+font-size:15px;
+
+}
+
+.fade{
+
+opacity:0;
+
+transform:translateY(40px);
+
+transition:1s;
+
+}
+
+.fade.show{
+
+opacity:1;
+
+transform:none;
+
+}
+
+@media(max-width:900px){
+
+.hero h1{
+
+font-size:58px;
+
+line-height:64px;
+
+}
+
+.subtitle{
+
+font-size:18px;
+
+line-height:31px;
+
+}
+
+.community{
+
+flex-direction:column;
+
+text-align:center;
+
+}
+
+.community-left{
+
+flex-direction:column;
+
+}
+
+}
+
+@media(max-width:650px){
+
+.hero{
+
+padding-top:55px;
+
+}
+
+.hero h1{
+
+font-size:46px;
+
+line-height:50px;
+
+}
+
+.stats{
+
+grid-template-columns:1fr;
+
+}
+
+.card h2{
+
+font-size:27px;
+
+}
+
+.community h2{
+
+font-size:34px;
+
+}
+
+.community img{
+
+width:95px;
+
+height:95px;
+
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<section class="hero fade">
+
+<div class="badge">
+<i class="fa-solid fa-star"></i>
+OFFICIAL LINKS
+</div>
+
+<h1>
+FOLLOW
+<span>US</span>
+</h1>
+
+<p class="subtitle">
+Stay Connected. Get Updates.<br>
+Download Free <b>Hindi Dubbed Anime.</b>
+</p>
+
+<div class="stats">
+
+<div class="stat">
+<i class="fa-solid fa-users"></i>
+<div>
+<h3>10K+</h3>
+<p>Members</p>
+</div>
+</div>
+
+<div class="stat">
+<i class="fa-solid fa-bolt"></i>
+<div>
+<h3>24/7</h3>
+<p>Updates</p>
+</div>
+</div>
+
+<div class="stat">
+<i class="fa-solid fa-cloud-arrow-down"></i>
+<div>
+<h3>100%</h3>
+<p>Free Access</p>
+</div>
+</div>
+
+</div>
+
+<div class="cards">
+  <!-- Telegram Channel -->
+
+<div class="card fade">
+
+<div class="social-icon telegram">
+<i class="fab fa-telegram-plane"></i>
+</div>
+
+<h2>Telegram Channel</h2>
+
+<p>
+Join our official Telegram channel for the latest anime updates,
+new releases and download links.
+</p>
+
+<a class="btn telegram-btn"
+href="https://t.me/HindiAnimestuff"
+target="_blank">
+Join Channel
+<i class="fa-solid fa-arrow-right"></i>
+</a>
+
+</div>
+
+<!-- Instagram -->
+
+<div class="card fade">
+
+<div class="social-icon instagram">
+<i class="fab fa-instagram"></i>
+</div>
+
+<h2>Instagram</h2>
+
+<p>
+Follow for anime edits,
+reels,
+stories,
+updates and behind-the-scenes content.
+</p>
+
+<a class="btn instagram-btn"
+href="https://www.instagram.com/aditya.s1x"
+target="_blank">
+Follow Us
+<i class="fa-solid fa-arrow-right"></i>
+</a>
+
+</div>
+
+<!-- Pinterest -->
+
+<div class="card fade">
+
+<div class="social-icon pinterest">
+<i class="fab fa-pinterest-p"></i>
+</div>
+
+<h2>Pinterest</h2>
+
+<p>
+Explore anime wallpapers,
+posters,
+profile pictures and aesthetic pins.
+</p>
+
+<a class="btn pinterest-btn"
+href="https://pin.it/7nHH5pcum"
+target="_blank">
+Visit Profile
+<i class="fa-solid fa-arrow-right"></i>
+</a>
+
+</div>
+
+<!-- Personal Telegram -->
+
+<div class="card fade">
+
+<div class="social-icon telegram">
+<i class="fab fa-telegram-plane"></i>
+</div>
+
+<h2>Personal Telegram</h2>
+
+<p>
+Need help or have any suggestions?
+Feel free to contact me personally anytime.
+</p>
+
+<a class="btn telegram-btn"
+href="https://t.me/rec2arc"
+target="_blank">
+Message Me
+<i class="fa-solid fa-paper-plane"></i>
+</a>
+
+</div>
+
+<!-- YouTube -->
+
+<div class="card fade">
+
+<div class="social-icon youtube">
+<i class="fab fa-youtube"></i>
+</div>
+
+<h2>YouTube</h2>
+
+<p>
+Subscribe for anime news,
+reviews,
+editing tutorials,
+and exclusive content.
+</p>
+
+<a class="btn youtube-btn"
+href="https://youtube.com/@rec2arc"
+target="_blank">
+Subscribe
+<i class="fa-solid fa-arrow-right"></i>
+</a>
+
+</div>
+
+</div>
+
+<!-- Community Section -->
+
+<section class="community fade">
+
+<div class="community-left">
+
+<img
+src="https://i.ibb.co/ZzrTgJwX/VQwbu-PAq.jpg"
+alt="HindiAnimeStuff">
+
+<div>
+
+<h2>
+JOIN
+<span>OUR COMMUNITY</span>
+</h2>
+
+<p>
+Become a part of the fastest-growing Hindi Anime community
+and enjoy unlimited anime content absolutely free.
+</p>
+
+<a
+class="btn"
+href="https://t.me/HindiAnimestuff"
+target="_blank">
+
+<i class="fab fa-telegram-plane"></i>
+
+JOIN TELEGRAM CHANNEL NOW
+
+</a>
+
+</div>
+
+</div>
+
+</section>
+
+<footer>
+
+© 2025 HindiAnimeStuff |
+All Rights Reserved
+
+<br><br>
+
+This site is for educational &
+entertainment purposes only.
+
+</footer>
+
+</div>
+
+<script>
+
+const observer = new IntersectionObserver((entries)=>{
+
+entries.forEach(entry=>{
+
+if(entry.isIntersecting){
+
+entry.target.classList.add("show");
+
+}
+
+});
+
+},{
+threshold:.15
+});
+
+document.querySelectorAll(".fade").forEach(el=>{
+
+observer.observe(el);
+
+});
+
+</script>
+
+</body>
+</html>
