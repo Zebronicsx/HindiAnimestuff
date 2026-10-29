@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}{{ site_name }} — Report Link Not Working{% endblock %}
+{% block content %}
+<div class="page-title">
+  <h1>Report Link Not Working</h1>
+  <p>Broken download? Missing title? Fill in the form below and it lands straight in our inbox.</p>
+</div>
+
+<div class="ip-wrap">
+  <form class="report-form" id="reportForm">
+    <label>
+      <span>Title / Page</span>
+      <input type="text" id="reportTitle" maxlength="150" placeholder="e.g. Alice in Borderland Season 1" required>
+    </label>
+    <label>
+      <span>Your Email <small>(optional, only if you want a reply)</small></span>
+      <input type="email" id="reportEmail" maxlength="100" placeholder="you@example.com">
+    </label>
+    <label>
+      <span>What's wrong? *</span>
+      <textarea id="reportMessage" maxlength="800" rows="5" placeholder="e.g. 720p link on Episode 4 shows file not found" required></textarea>
+    </label>
+    <button type="submit" id="reportSubmit">Send Report</button>
+    <div class="report-status" id="reportStatus" hidden></div>
+  </form>
+
+  <div class="ip-check-list">
+    <div class="ip-check-item"><span>&#10003;</span> Request an anime, movie or series</div>
+    <div class="ip-check-item"><span>&#10003;</span> Request a Hindi dub</div>
+    <div class="ip-check-item"><span>&#10003;</span> Report a broken or expired download link</div>
+    <div class="ip-check-item"><span>&#10003;</span> Ask us anything directly</div>
+  </div>
+
+  <p class="ip-note">We usually reply within a day. Please mention the exact title, season and quality that's affected so we can fix it fast.</p>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+(function () {
+  var EMAILJS_PUBLIC_KEY = "{{ emailjs_public_key }}";
+  var EMAILJS_SERVICE_ID = "{{ emailjs_service_id }}";
+  var EMAILJS_TEMPLATE_ID = "{{ report_emailjs_template_id }}";
+  emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+  var form = document.getElementById("reportForm");
+  var titleEl = document.getElementById("reportTitle");
+  var emailEl = document.getElementById("reportEmail");
+  var msgEl = document.getElementById("reportMessage");
+  var submitBtn = document.getElementById("reportSubmit");
+  var statusEl = document.getElementById("reportStatus");
+
+  // Pre-fill from a "Report a Problem" button on a detail/download page
+  // (?title=...&page=...), so people don't have to retype what they were
+  // looking at.
+  var params = new URLSearchParams(window.location.search);
+  if (params.get("title")) titleEl.value = params.get("title");
+  var fromPage = params.get("page")
+    ? window.location.origin + "{{ root_prefix }}" + params.get("page")
+    : "";
+
+  function showStatus(text, ok) {
+    statusEl.hidden = false;
+    statusEl.textContent = text;
+    statusEl.className = "report-status " + (ok ? "ok" : "err");
+  }
+
+  form.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var title = titleEl.value.trim();
+    var message = msgEl.value.trim();
+    if (!title || !message) return;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Sending…";
+
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      page_title: title,
+      page_url: fromPage || window.location.href,
+      from_name: emailEl.value.trim() || "Visitor (report form)",
+      reply_to: emailEl.value.trim(),
+      message: message
+    }).then(function () {
+      showStatus("✅ Sent — thanks, we'll take a look soon!", true);
+      form.reset();
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Send Report";
+    }).catch(function (err) {
+      console.error("Report send failed:", err);
+      showStatus("Couldn't send right now — please try again in a bit.", false);
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Send Report";
+    });
+  });
+})();
+</script>
+{% endblock %}

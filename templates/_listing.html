@@ -1,0 +1,25 @@
+{# URL-driven results area, shared by index.html and pagination.html.
+   Needs (from generate.py): listing_items (page 1, pre-rendered), per_page.
+   Optional: listing_heading ("Latest Episodes"-style section title) OR
+             listing_title + listing_subtitle (page-title block).
+   Markup only - all behaviour lives in assets/pagination.js (+ assets/search.js). #}
+<div id="listing" data-per-page="{{ per_page }}" data-category="anime">
+  {% if listing_title %}
+  <div class="page-title browse-only">
+    <h1>{{ listing_title }}</h1>
+    {% if listing_subtitle %}<p>{{ listing_subtitle }}</p>{% endif %}
+  </div>
+  {% elif listing_heading %}
+  <div class="section-head browse-only"><h2>{{ listing_heading }}</h2></div>
+  {% endif %}
+
+  {# shown instead of the browse heading while a search is active (html.search-mode) #}
+  <div class="page-title listing-head" id="listingHead">
+    <h1 id="listingTitle"></h1>
+    <p><span id="listingSub" aria-live="polite"></span> <a class="listing-clear" id="listingClear" href="?">Clear search</a></p>
+  </div>
+
+  <div class="genre-bar browse-only" id="genreBar"></div>
+  {% with items=listing_items, grid_id="listGrid", thumb_w=342 %}{% include "_cards.html" %}{% endwith %}
+  <nav class="pagination" id="pagination" aria-label="Pagination"></nav>
+</div>

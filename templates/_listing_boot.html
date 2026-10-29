@@ -1,0 +1,17 @@
+{# Goes in {% block head_extra %} of any page that mounts _listing.html.
+   Runs before first paint: mirrors ?s= / ?page= / ?genre= onto <html> so the home
+   sections don't flash (search-mode) and the pre-rendered page 1 doesn't flash
+   before pagination.js swaps in the requested page (listing-pending). #}
+<script>
+(function () {
+  try {
+    var p = new URLSearchParams(location.search), d = document.documentElement.classList;
+    var s = (p.get("s") || "").trim();
+    if (s) d.add("search-mode");
+    if (s || p.get("genre") || parseInt(p.get("page"), 10) > 1) {
+      d.add("listing-pending");
+      setTimeout(function () { d.remove("listing-pending"); }, 2500); /* safety net if JS is blocked */
+    }
+  } catch (e) {}
+})();
+</script>

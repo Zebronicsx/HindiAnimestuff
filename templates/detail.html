@@ -1,0 +1,381 @@
+{% extends "base.html" %}
+{% block title %}{{ item.title }} — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="detail-view">
+  <div class="dv-topbar">
+    <a class="dv-back" href="{{ root_prefix }}{{ item.category }}.html">&larr; Back to {{ item.category|capitalize }}</a>
+    <button class="dv-share-btn" id="shareBtn">
+      <div class="svg-wrapper-1"><div class="svg-wrapper">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M1.946 9.315c-.522-.174-.527-.455.01-.634l19.087-6.362c.529-.176.832.12.684.638l-5.454 19.086c-.15.529-.454.547-.679.045L12 14l6-8-8 6-8.054-2.685z"/></svg>
+      </div></div>
+      <span>Share</span>
+    </button>
+  </div>
+
+  <main class="dv-main">
+    <div class="dv-hero">
+      <div class="dv-poster">
+        {% if item.season %}<div class="dv-poster-fallback">{{ item.season|upper }}</div>{% endif %}
+        <img src="{{ item.poster if item.poster.startswith('http') else root_prefix ~ item.poster }}" alt="{{ item.title }}" onerror="this.style.display='none'">
+      </div>
+      <div class="dv-info">
+        {% if item.season %}<span class="dv-season-tag">{{ item.season }}</span>{% endif %}
+        <h1 class="dv-h1">{{ item.title }}</h1>
+        <div class="dv-rating-row">
+          <div class="dv-rating-badge">★ {{ item.rating }}<sub>/10</sub></div>
+          <div class="dv-genre-tags">
+            {% for g in item.genres %}<span class="dv-genre-tag">{{ g }}</span>{% endfor %}
+          </div>
+        </div>
+        <div class="dv-pill-row">
+          {% if item.quality_tag %}<span class="dv-badge-type">{{ item.quality_tag }}</span>{% endif %}
+          {% if item.episode_tag %}<span class="dv-info-pill dv-status-ok">{{ item.episode_tag|replace("E ", "EP ") }}</span>{% endif %}
+          {% if item.languages %}<span class="dv-info-pill dv-lang">{{ item.languages|join(' · ') }}</span>{% endif %}
+          {% if item.runtime %}<span class="dv-info-pill">{{ item.runtime }}</span>{% endif %}
+        </div>
+        <p class="dv-synopsis">{{ item.description }}</p>
+        <div class="dv-spec-grid">
+          {% if item.runtime %}<div class="dv-spec"><div class="dv-spec-label">Runtime</div><div class="dv-spec-value">{{ item.runtime }}</div></div>{% endif %}
+          {% if item.languages %}<div class="dv-spec"><div class="dv-spec-label">Language</div><div class="dv-spec-value">{{ item.languages|join(', ') }}</div></div>{% endif %}
+          {% if item.subtitle %}<div class="dv-spec"><div class="dv-spec-label">Subtitle</div><div class="dv-spec-value">{{ item.subtitle }}</div></div>{% endif %}
+          {% if item.quality_tag %}<div class="dv-spec"><div class="dv-spec-label">Quality</div><div class="dv-spec-value">{{ item.quality_tag }}</div></div>{% endif %}
+          {% if item.episodes %}<div class="dv-spec"><div class="dv-spec-label">Episodes</div><div class="dv-spec-value">{{ item.episodes }}</div></div>{% endif %}
+          {% if item.type %}<div class="dv-spec"><div class="dv-spec-label">Type</div><div class="dv-spec-value">{{ item.type }}</div></div>{% endif %}
+        </div>
+
+        <div class="dv-download-section">
+          <div class="dv-download-title">Download Links</div>
+          {% if item.has_download_page %}
+          <div class="dv-part-block dv-single-download">
+            <a class="dv-main-download-btn" href="{{ root_prefix }}download/{{ item.id }}.html">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download
+            </a>
+          </div>
+          {% else %}
+          <div class="dv-part-block">
+            <div class="dv-quality-row">
+              <div class="dv-quality-btn dv-unavailable">Not Available</div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <a class="dv-report-btn" href="{{ root_prefix }}report.html?title={{ item.title | urlencode }}&page=pages%2F{{ item.id }}.html">&#9888; Report a Problem</a>
+
+        <div class="comment-box" id="commentBox">
+          <h3 id="commentHeading">💬 Comments</h3>
+          <textarea id="commentText" placeholder="Your comment…" maxlength="500"></textarea>
+          <input type="text" id="commentName" placeholder="Name *" maxlength="40" required>
+          <button type="button" id="commentSubmit">Post comment</button>
+          <div class="comment-list" id="commentList"><div class="comment-loading">Loading comments…</div></div>
+          <button type="button" class="comment-admin-link" id="commentAdminBtn">Admin</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+(function () {
+  var firebaseConfig = {
+    apiKey: "AIzaSyDYkDycquqaHAneuxKRa7R2O31gmrm2NPc",
+    authDomain: "courseskida.firebaseapp.com",
+    projectId: "courseskida",
+    storageBucket: "courseskida.firebasestorage.app",
+    messagingSenderId: "772322063983",
+    appId: "1:772322063983:web:d93e99cc24a3e439cf3f9a"
+  };
+  firebase.initializeApp(firebaseConfig);
+  var db = firebase.firestore();
+
+  var EMAILJS_PUBLIC_KEY = "{{ emailjs_public_key }}";
+  var EMAILJS_SERVICE_ID = "{{ emailjs_service_id }}";
+  var EMAILJS_TEMPLATE_ID = "{{ comment_emailjs_template_id }}";
+  emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+  var pageId = "{{ item.id }}";
+  var pageTitle = "{{ item.title }}{% if item.season %} {{ item.season }}{% endif %}";
+  var pageUrl = window.location.href;
+  var listEl = document.getElementById("commentList");
+  var headingEl = document.getElementById("commentHeading");
+  var nameEl = document.getElementById("commentName");
+  var textEl = document.getElementById("commentText");
+  var submitBtn = document.getElementById("commentSubmit");
+  var adminBtn = document.getElementById("commentAdminBtn");
+
+  // ---- Admin mode ---------------------------------------------------
+  // IMPORTANT: this is a soft deterrent only, not real security — the
+  // password lives in this file, visible to anyone who views source. It
+  // just hides the Pin/Delete buttons from casual visitors. Real
+  // protection needs a Firestore Security Rule that only allows writes
+  // to "pinned"/deletes from an authenticated admin account; this can't
+  // be set from here and must be configured in the Firebase console.
+  var ADMIN_PASSWORD = "63335818875188854664848457645488484845464646184";
+  var isAdmin = sessionStorage.getItem("haAdminOk") === "1";
+
+  function setAdminUI() {
+    adminBtn.textContent = isAdmin ? "Exit admin mode" : "Admin";
+    adminBtn.classList.toggle("is-active", isAdmin);
+  }
+  adminBtn.addEventListener("click", function () {
+    if (isAdmin) {
+      isAdmin = false;
+      sessionStorage.removeItem("haAdminOk");
+      setAdminUI();
+      load();
+      return;
+    }
+    var pw = prompt("Admin password:");
+    if (pw === ADMIN_PASSWORD) {
+      isAdmin = true;
+      sessionStorage.setItem("haAdminOk", "1");
+      setAdminUI();
+      load();
+    } else if (pw !== null) {
+      alert("Wrong password.");
+    }
+  });
+  setAdminUI();
+
+  // ---- Likes (one per browser, no login needed) ----------------------
+  var LIKED_KEY = "haLikedComments";
+  function likedSet() {
+    try { return new Set(JSON.parse(localStorage.getItem(LIKED_KEY) || "[]")); }
+    catch (e) { return new Set(); }
+  }
+  function markLiked(id) {
+    var s = likedSet(); s.add(id);
+    localStorage.setItem(LIKED_KEY, JSON.stringify(Array.from(s)));
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  function timeAgo(date) {
+    if (!date) return "";
+    var diff = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (diff < 60) return "just now";
+    if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+    if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+    if (diff < 604800) return Math.floor(diff / 86400) + "d ago";
+    return date.toLocaleDateString();
+  }
+
+  function commentRow(d, isReply) {
+    var c = d.data();
+    var id = d.id;
+    var date = c.timestamp && c.timestamp.toDate ? c.timestamp.toDate() : null;
+    var liked = likedSet().has(id);
+    var likes = c.likes || 0;
+    var pinned = !!c.pinned;
+    return (
+      '<div class="comment-item' + (isReply ? ' comment-reply' : '') + (pinned ? ' comment-pinned' : '') + '" data-id="' + id + '">' +
+        (pinned ? '<div class="c-pinned-tag">📌 Pinned</div>' : '') +
+        '<div class="c-name">' + escapeHtml(c.name) + '</div>' +
+        '<div class="c-date">' + escapeHtml(timeAgo(date)) + '</div>' +
+        '<div class="c-text">' + escapeHtml(c.text) + '</div>' +
+        '<div class="c-actions">' +
+          '<button type="button" class="c-like" data-action="like"' + (liked ? ' disabled' : '') + '>' + (liked ? '❤' : '🤍') + ' <span class="c-like-count">' + likes + '</span></button>' +
+          (!isReply ? '<button type="button" class="c-reply-toggle" data-action="reply-toggle">Reply</button>' : '') +
+          (isAdmin ? '<button type="button" class="c-pin" data-action="pin">' + (pinned ? 'Unpin' : '📌 Pin') + '</button>' : '') +
+          (isAdmin ? '<button type="button" class="c-delete" data-action="delete">🗑 Delete</button>' : '') +
+        '</div>' +
+        (!isReply ? '<div class="c-reply-form" hidden><input type="text" class="c-reply-name" placeholder="Name *" maxlength="40"><textarea class="c-reply-text" placeholder="Write a reply…" maxlength="500"></textarea><button type="button" class="c-reply-submit" data-action="reply-submit">Reply</button></div>' : '') +
+        '<div class="c-replies"></div>' +
+      '</div>'
+    );
+  }
+
+  function render(topLevel, repliesByParent) {
+    headingEl.textContent = "💬 " + (topLevel.length + Object.keys(repliesByParent).reduce(function (n, k) { return n + repliesByParent[k].length; }, 0)) + " Comments";
+    if (!topLevel.length) {
+      listEl.innerHTML = '<div class="comment-empty">No comments yet — be the first!</div>';
+      return;
+    }
+    // Pinned first, then newest-first.
+    var sorted = topLevel.slice().sort(function (a, b) {
+      var ap = a.data().pinned ? 1 : 0, bp = b.data().pinned ? 1 : 0;
+      if (ap !== bp) return bp - ap;
+      var ta = a.data().timestamp ? a.data().timestamp.toMillis() : 0;
+      var tb = b.data().timestamp ? b.data().timestamp.toMillis() : 0;
+      return tb - ta;
+    });
+    listEl.innerHTML = sorted.map(function (d) { return commentRow(d, false); }).join("");
+
+    sorted.forEach(function (d) {
+      var replies = (repliesByParent[d.id] || []).slice().sort(function (a, b) {
+        var ta = a.data().timestamp ? a.data().timestamp.toMillis() : 0;
+        var tb = b.data().timestamp ? b.data().timestamp.toMillis() : 0;
+        return ta - tb; // replies read oldest -> newest, like a conversation
+      });
+      if (!replies.length) return;
+      var row = listEl.querySelector('.comment-item[data-id="' + d.id + '"] > .c-replies');
+      if (row) row.innerHTML = replies.map(function (r) { return commentRow(r, true); }).join("");
+    });
+  }
+
+  function load() {
+    db.collection("comments")
+      .where("pageId", "==", pageId)
+      .limit(200)
+      .get()
+      .then(function (snap) {
+        var topLevel = [];
+        var repliesByParent = {};
+        snap.docs.forEach(function (d) {
+          var parentId = d.data().parentId;
+          if (parentId) {
+            (repliesByParent[parentId] = repliesByParent[parentId] || []).push(d);
+          } else {
+            topLevel.push(d);
+          }
+        });
+        render(topLevel, repliesByParent);
+      })
+      .catch(function (err) {
+        console.error("Comment load failed:", err);
+        listEl.innerHTML = '<div class="comment-empty">Couldn\u2019t load comments right now.</div>';
+      });
+  }
+
+  function postComment(name, text, parentId) {
+    return db.collection("comments").add({
+      pageId: pageId,
+      parentId: parentId || null,
+      name: name.slice(0, 40),
+      text: text.slice(0, 500),
+      pinned: false,
+      likes: 0,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(function () {
+      // Email notification is best-effort: if it fails (e.g. offline),
+      // the comment itself is already safely saved in Firestore either way.
+      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+        page_title: pageTitle,
+        page_url: pageUrl,
+        from_name: name,
+        message: (parentId ? "[Reply] " : "") + text
+      }).catch(function (err) {
+        console.error("Comment email notification failed:", err);
+      });
+    });
+  }
+
+  submitBtn.addEventListener("click", function () {
+    var name = (nameEl.value || "").trim();
+    var text = (textEl.value || "").trim();
+    if (!name) { alert("Please enter your name."); return; }
+    if (!text) { alert("Please write a comment."); return; }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Posting…";
+    postComment(name, text).then(function () {
+      textEl.value = "";
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Post comment";
+      load();
+    }).catch(function (err) {
+      console.error("Comment post failed:", err);
+      alert("Couldn't post your comment. Please try again.");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Post comment";
+    });
+  });
+
+  // Event delegation for like / reply / pin / delete — comments re-render often.
+  listEl.addEventListener("click", function (ev) {
+    var btn = ev.target.closest("[data-action]");
+    if (!btn) return;
+    var item = ev.target.closest(".comment-item");
+    var id = item && item.getAttribute("data-id");
+    var action = btn.getAttribute("data-action");
+
+    if (action === "like") {
+      if (likedSet().has(id)) return;
+      markLiked(id);
+      btn.disabled = true;
+      btn.innerHTML = '❤ <span class="c-like-count">' + (parseInt(btn.querySelector(".c-like-count").textContent, 10) + 1) + '</span>';
+      db.collection("comments").doc(id).update({ likes: firebase.firestore.FieldValue.increment(1) })
+        .catch(function (err) { console.error("Like failed:", err); });
+      return;
+    }
+
+    if (action === "reply-toggle") {
+      var form = item.querySelector(".c-reply-form");
+      form.hidden = !form.hidden;
+      return;
+    }
+
+    if (action === "reply-submit") {
+      var nameI = item.querySelector(".c-reply-name");
+      var textI = item.querySelector(".c-reply-text");
+      var rName = (nameI.value || "").trim();
+      var rText = (textI.value || "").trim();
+      if (!rName) { alert("Please enter your name."); return; }
+      if (!rText) { alert("Please write a reply."); return; }
+      btn.disabled = true;
+      btn.textContent = "Posting…";
+      postComment(rName, rText, id).then(function () {
+        load();
+      }).catch(function (err) {
+        console.error("Reply failed:", err);
+        alert("Couldn't post your reply. Please try again.");
+        btn.disabled = false;
+        btn.textContent = "Reply";
+      });
+      return;
+    }
+
+    if (action === "pin") {
+      if (!isAdmin) return;
+      var nowPinned = item.classList.contains("comment-pinned");
+      db.collection("comments").doc(id).update({ pinned: !nowPinned })
+        .then(load)
+        .catch(function (err) { console.error("Pin failed:", err); alert("Couldn't update pin."); });
+      return;
+    }
+
+    if (action === "delete") {
+      if (!isAdmin) return;
+      if (!confirm("Delete this comment?")) return;
+      db.collection("comments").doc(id).delete()
+        .then(load)
+        .catch(function (err) { console.error("Delete failed:", err); alert("Couldn't delete."); });
+      return;
+    }
+  });
+
+  load();
+})();
+</script>
+<script>
+document.getElementById('shareBtn').addEventListener('click', function () {
+  var shareText = "\u2022 {{ item.title }}{% if item.season %} {{ item.season }}{% endif %}\n" +
+    "\u2014 Rating: {{ item.rating }}/10\n" +
+    "\u2014 Genres: {{ item.genres|join(' | ') }}\n" +
+    {% if item.quality_tag %}"\u2014 Quality: {{ item.quality_tag }}\n" +{% endif %}
+    {% if item.languages %}"\u2014 Audio Tracks: {{ item.languages|join(' \u00b7 ') }}\n" +{% endif %}
+    {% if item.subtitle %}"\u2014 Subtitle: {{ item.subtitle }}\n" +{% endif %}
+    {% if item.episodes %}"\u2014 Total Episode: {{ item.episodes }}\n" +{% endif %}
+    "\n\u27a5  Download Now: " + window.location.href;
+
+  if (navigator.share) {
+    navigator.share({ title: document.title, text: shareText, url: window.location.href }).catch(function () {});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(shareText).then(function () {
+      alert('\u2318 Details copied to clipboard! Share it anywhere.');
+    }).catch(function () {
+      prompt('Copy this text and share it:', shareText);
+    });
+  } else {
+    prompt('Copy this text and share it:', shareText);
+  }
+});
+</script>
+{% endblock %}

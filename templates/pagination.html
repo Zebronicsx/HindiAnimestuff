@@ -1,0 +1,12 @@
+{# Dedicated paginated listing page -> output/pagination.html
+   Same URL API as the homepage:  pagination.html?page=2   pagination.html?s=Solo+Leveling&page=2
+   All logic is in assets/pagination.js; this file is only the page shell. #}
+{% extends "base.html" %}
+{% block title %}{{ site_name }} — Browse Anime{% endblock %}
+{% block head_extra %}{% include "_listing_boot.html" %}{% endblock %}
+{% block content %}
+{% with listing_title="Browse Anime", listing_subtitle=listing_total ~ " titles — use search, genres or the page numbers." %}{% include "_listing.html" %}{% endwith %}
+{% endblock %}
+{% block scripts %}
+<script src="{{ asset_prefix }}assets/pagination.js?v={{ build_version }}"></script>
+{% endblock %}
