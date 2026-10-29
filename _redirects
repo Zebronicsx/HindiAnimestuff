@@ -1,0 +1,12 @@
+/anime/*     /index.html   200
+/search      /index.html   200
+/series      /index.html   200
+/movies      /index.html   200
+/watchlist   /index.html   200
+/trending    /index.html   200
+/letter/*    /index.html   200
+/genre/*     /index.html   200
+/report      /index.html   200
+/request     /index.html   200
+/dmca        /index.html   200
+/*           /index.html   200
