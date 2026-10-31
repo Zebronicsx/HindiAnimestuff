@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#06060b" />
+    <meta name="description" content="AnimesFreak — Stream the Madness. Watch online or download anime, movies and web series in Hindi dub. 480p / 720p HD / 1080p FHD multi audio." />
+    <meta property="og:title" content="AnimesFreak — Stream the Madness" />
+    <meta property="og:description" content="Anime OTT network with Hindi dub, multi audio and direct downloads. 1,700+ titles in the vault." />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2306060b'/%3E%3Crect x='3' y='3' width='58' height='58' rx='12' fill='none' stroke='%23ff2a2a' stroke-width='2.5'/%3E%3Cpath d='M22 18 L46 32 L22 46 Z' fill='%23ff2a2a'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+JP:wght@500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <title>AnimesFreak — Stream the Madness | Anime OTT Network</title>
+    <style>
+      html, body { margin: 0; background: #06060b; }
+      #boot-splash {
+        position: fixed; inset: 0; z-index: 300; display: grid; place-items: center;
+        background: #06060b; color: #f4f2ec;
+        font-family: "Space Grotesk", system-ui, sans-serif;
+      }
+      #boot-splash .bs-wrap { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+      #boot-splash .bs-mark {
+        width: 64px; height: 64px; border: 1px solid rgba(255,42,42,.55); border-radius: 16px;
+        display: grid; place-items: center; transform: skewX(-6deg);
+        background: radial-gradient(circle at 50% 40%, rgba(255,42,42,.28), transparent 70%);
+        box-shadow: 0 0 48px -8px rgba(255,42,42,.65); color: #ff2a2a; font-size: 26px;
+      }
+      #boot-splash .bs-name {
+        font-family: "Anton", Impact, sans-serif; letter-spacing: .26em; text-transform: uppercase;
+        font-size: 15px; color: #f4f2ec;
+      }
+      #boot-splash .bs-name span { color: #ff2a2a; }
+      #boot-splash .bs-bar { width: 172px; height: 3px; background: rgba(244,242,236,.1); overflow: hidden; }
+      #boot-splash .bs-bar i {
+        display: block; height: 100%; width: 40%; background: #ff2a2a;
+        box-shadow: 0 0 10px #ff2a2a; animation: bsSlide 1.15s ease-in-out infinite;
+      }
+      #boot-splash .bs-tag {
+        font-family: ui-monospace, monospace; font-size: 9px; letter-spacing: .34em;
+        text-transform: uppercase; color: #8a8a9a;
+      }
+      #boot-splash .bs-help {
+        display: none; width: min(520px, calc(100vw - 40px)); padding: 24px;
+        border: 1px solid rgba(255,42,42,.4); background: #0b0b13; text-align: center;
+      }
+      #boot-splash .bs-help strong {
+        display: block; color: #f4f2ec; font-size: 18px; letter-spacing: .08em;
+        text-transform: uppercase;
+      }
+      #boot-splash .bs-help p { color: #8a8a9a; font-size: 13px; line-height: 1.6; }
+      #boot-splash .bs-help code { color: #22e6ff; }
+      #boot-splash .bs-help a {
+        display: inline-block; margin-top: 10px; padding: 11px 18px; color: #fff;
+        background: #ff2a2a; font-size: 11px; font-weight: 700; letter-spacing: .16em;
+        text-decoration: none; text-transform: uppercase;
+      }
+      @keyframes bsSlide { 0% { transform: translateX(-120%); } 100% { transform: translateX(360%); } }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div id="boot-splash">
+        <div class="bs-wrap">
+          <div class="bs-mark">▶</div>
+          <div class="bs-name">Animes<span>Freak</span></div>
+          <div class="bs-bar"><i></i></div>
+          <div class="bs-tag">Loading the vault</div>
+          <div class="bs-help" id="boot-help">
+            <strong>Unbuilt source files detected</strong>
+            <p>
+              This host is serving the development file. Upload <code>deploy/index.html</code>
+              or <code>dist/index.html</code> as your website's root <code>index.html</code>.
+            </p>
+            <a id="built-site-link" href="./dist/index.html">Try built site</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <noscript>
+      <div style="position:fixed;inset:0;display:grid;place-items:center;background:#06060b;color:#f4f2ec;font-family:system-ui,sans-serif;text-align:center;padding:24px;z-index:400">
+        <div>
+          <p style="font-size:20px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:#ff2a2a">AnimesFreak</p>
+          <p style="margin-top:10px;font-size:14px;color:#8a8a9a">This site needs JavaScript enabled. It is a static, single-file build — just open it in any modern browser.</p>
+        </div>
+      </div>
+    </noscript>
+    <script>
+      // A plain static host cannot execute /src/main.tsx. Instead of showing an
+      // endless loader, explain exactly which compiled file must be uploaded.
+      window.__AF_WATCHDOG__ = window.setTimeout(function () {
+        var state = document.documentElement.dataset.afApp;
+        if (state === "ready" || state === "booting") return;
+        var bar = document.querySelector("#boot-splash .bs-bar");
+        var tag = document.querySelector("#boot-splash .bs-tag");
+        var help = document.getElementById("boot-help");
+        if (bar) bar.style.display = "none";
+        if (tag) tag.style.display = "none";
+        if (help) help.style.display = "block";
+      }, 4500);
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

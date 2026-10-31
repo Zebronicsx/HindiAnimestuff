@@ -24,8 +24,15 @@ export default function App() {
 
   useEffect(() => {
     loadCatalog()
-      .then(setItems)
-      .catch(() => setError(true));
+      .then((catalog) => {
+        setItems(catalog);
+        document.documentElement.dataset.afApp = "ready";
+        window.clearTimeout(window.__AF_WATCHDOG__);
+      })
+      .catch(() => {
+        document.documentElement.dataset.afApp = "error";
+        setError(true);
+      });
   }, []);
 
   // lenis smooth scroll
@@ -160,7 +167,7 @@ function Toaster() {
   );
 }
 
-/** waits min 2.4s after data so the loader ritual completes */
+/** Briefly keeps the loader visible after local catalog decoding. */
 function BootTimer({ onDone }: { onDone: () => void }) {
   useEffect(() => {
     const t = setTimeout(onDone, 1400);

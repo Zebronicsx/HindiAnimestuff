@@ -5,6 +5,11 @@ A fully static anime OTT front-end (React + Vite + Tailwind, compiled to a **sin
 The entire catalog (1,715 titles, 15,500+ episode/movie links) is **embedded into the build**.
 There is no backend, no API call and no database — so the site runs anywhere that can serve HTML.
 
+> [!IMPORTANT]
+> Run `npm run build` before uploading. The build turns the project-root **`index.html`** into the
+> compiled, self-contained website and also creates identical copies at `deploy/index.html` and
+> `dist/index.html`. Upload any one of those files as the host's root `index.html`.
+
 ---
 
 ## 1. Run locally
@@ -21,7 +26,10 @@ npm run build      # outputs dist/index.html (self-contained)
 npm run preview    # optional local production preview
 ```
 
-> `dist/index.html` contains all JS, CSS, the brand images and the full catalog inline.
+The original Vite development page is stored as `index.source.html`. `predev` / `prebuild` restore
+that template automatically, while `postbuild` replaces the root `index.html` with the compiled site.
+
+> `index.html`, `dist/index.html` and `deploy/index.html` contain all JS, CSS, the brand images and the full catalog inline.
 > You can double-click it, drag it into a browser, or upload just that one file.
 
 ---

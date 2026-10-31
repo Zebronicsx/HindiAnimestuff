@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postbuild": "node scripts/copy-static.mjs",
+    "predev": "node scripts/prepare-html.mjs",
+    "prebuild": "node scripts/prepare-html.mjs"
   },
   "dependencies": {
     "clsx": "2.1.1",
