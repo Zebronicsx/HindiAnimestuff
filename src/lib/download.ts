@@ -1,17 +1,14 @@
 /**
- * Download + share helpers.
+ * Download helpers.
  *
- * Why this exists: the file host sends `Content-Disposition: attachment`, so a
- * plain navigation downloads the file. Opening in a new tab (`target=_blank`)
- * gets blocked inside sandboxed previews / popup blockers — that's why the old
- * download buttons looked dead. A same-tab programmatic anchor click always fires.
+ * The site never renders or copies a raw file URL. Files are requested through a
+ * hidden, sandboxed iframe: the host answers with `Content-Disposition: attachment`,
+ * so the browser starts the download while the page stays exactly where it is.
  */
 
 export function notify(message: string) {
   window.dispatchEvent(new CustomEvent("af-toast", { detail: message }));
 }
-
-const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** true when the URL is a raw media file the host serves as an attachment */
 export function isDirectFileUrl(url: string) {
@@ -19,47 +16,46 @@ export function isDirectFileUrl(url: string) {
   return /\.(mkv|mp4|avi|webm|m4v)(\?|&|$)/i.test(decoded) || /workers\.dev\//.test(url);
 }
 
-export async function triggerDownload(url: string, label?: string) {
+function fileIframe(url: string): HTMLIFrameElement {
+  const frame = document.createElement("iframe");
+  frame.setAttribute("aria-hidden", "true");
+  frame.setAttribute("tabindex", "-1");
+  frame.style.cssText = "position:absolute;width:0;height:0;border:0;opacity:0;pointer-events:none;left:-9999px;";
+  frame.src = url;
+  document.body.appendChild(frame);
+  // attachment downloads start immediately; the frame is only a transport
+  window.setTimeout(() => frame.remove(), 60000);
+  return frame;
+}
+
+function pageIframe(url: string) {
+  const frame = document.createElement("iframe");
+  frame.setAttribute("aria-hidden", "true");
+  frame.setAttribute("tabindex", "-1");
+  frame.style.cssText = "position:fixed;width:1px;height:1px;border:0;opacity:0;pointer-events:none;left:-10px;top:-10px;";
+  frame.src = url;
+  document.body.appendChild(frame);
+  window.setTimeout(() => frame.remove(), 20000);
+}
+
+/** starts a download without navigating, opening a tab or exposing the link */
+export function triggerDownload(url: string, label?: string) {
   if (!url) return;
+  notify(label ? `Preparing ${label} — download starting…` : "Preparing your download…");
 
-  // Wrapper hosts (filesdl / hubcloud) are download pages, not files.
-  // Open those in a tab so the app is not navigated away inside a preview frame.
-  if (!isDirectFileUrl(url)) {
-    notify("Opening the download page…");
-    const win = window.open(url, "_blank", "noopener,noreferrer");
-    if (!win) {
-      notify("Popup blocked — use “Open direct link” instead.");
-    }
-    return;
+  if (isDirectFileUrl(url)) {
+    fileIframe(url);
+  } else {
+    // host landing page (filesdl / hubcloud / etc.)
+    pageIframe(url);
   }
 
-  notify(label ? `Starting download — ${label}` : "Starting download…");
-  try {
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "";
-    a.rel = "noopener";
-    a.style.display = "none";
-    document.body.appendChild(a);
-    a.click();
-    await wait(700);
-    a.remove();
-    notify("Download started. If nothing happened, use “Open direct link”.");
-  } catch {
-    window.location.href = url;
-  }
+  window.setTimeout(() => {
+    notify("If the file did not start, disable your download blocker and tap again.");
+  }, 900);
 }
 
-export async function copyLink(url: string) {
-  try {
-    await navigator.clipboard.writeText(url);
-    notify("Direct link copied to clipboard.");
-  } catch {
-    notify("Copy failed — long-press the link to copy it.");
-  }
-}
-
-/** Android can hand the direct URL to VLC / MX Player through an intent */
+/** Android can hand the stream to VLC / MX Player without showing the URL */
 export function openInVlc(url: string) {
   const u = new URL(url);
   const intent =

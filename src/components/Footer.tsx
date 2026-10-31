@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ArrowUpRight, Gamepad2, MessageCircle, Rss, Tv } from "lucide-react";
 import Logo from "./Logo";
+import InstallApp from "./InstallApp";
 import { href } from "../lib/router";
 
 const COLS = [
@@ -56,6 +57,7 @@ export default function Footer() {
               The anime OTT network for the obsessed — Hindi dub and multi audio. Watch online or download directly,{" "}
               <span className="text-oni">the chaos stream</span> is always live.
             </p>
+            <InstallApp variant="footer" />
             <div className="mt-7 flex gap-3">
               {SOCIAL.map((s) => (
                 <a

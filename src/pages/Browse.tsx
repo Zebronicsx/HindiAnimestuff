@@ -66,7 +66,7 @@ export default function Browse({ items, category }: { items: AnimeItem[]; catego
   }, [catItems, genre, lang, sort]);
 
   return (
-    <div className="pt-24 md:pt-32">
+    <div className="pt-20 md:pt-32">
       {/* banner */}
       <div className="relative overflow-hidden border-b border-line blueprint-oni">
         <p className="pointer-events-none absolute -right-6 top-0 select-none font-jp text-[11rem] md:text-[15rem] font-black leading-none text-paper/[0.03]">
@@ -92,8 +92,8 @@ export default function Browse({ items, category }: { items: AnimeItem[]; catego
       </div>
 
       {/* filter bar */}
-      <div className="sticky top-[88px] md:top-20 z-40 border-b border-line bg-ink/85 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2.5 px-5 py-3.5 md:px-8">
+      <div className="sticky top-16 z-40 md:top-20 border-b border-line bg-ink/85 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-4 py-3 sm:gap-2.5 sm:px-5 md:px-8">
           <FilterSelect icon={<Shapes className="h-3 w-3 text-oni" />} label="Genre" value={genre} options={genres} onChange={(v) => { setGenre(v); setShown(PAGE); }} />
           <FilterSelect icon={<Languages className="h-3 w-3 text-spark" />} label="Audio" value={lang} options={["All", ...LANGS]} onChange={(v) => { setLang(v); setShown(PAGE); }} />
           <FilterSelect
@@ -166,7 +166,7 @@ function FilterSelect({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="max-w-[110px] cursor-pointer bg-transparent text-[12px] font-semibold text-paper outline-none sm:max-w-none [&>option]:bg-panel"
+        className="min-w-0 max-w-[104px] cursor-pointer bg-transparent text-[11px] font-semibold text-paper outline-none sm:max-w-none sm:text-[12px] [&>option]:bg-panel"
       >
         {options.map((o) =>
           Array.isArray(o) ? (

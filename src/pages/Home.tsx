@@ -74,17 +74,6 @@ export default function Home({ items }: { items: AnimeItem[] }) {
           ))}
         </Row>
 
-        <Row num={num()} chip="Action" jp="戦闘" title="Adrenaline" accent="overdose">
-          {c.genreRow("Action").map((it, i) => (
-            <PosterCard key={it.id} item={it} index={i} />
-          ))}
-        </Row>
-
-        <Row num={num()} chip="Fantasy" jp="異世界" title="Fantasy" accent="dimensions">
-          {c.genreRow("Fantasy").map((it, i) => (
-            <PosterCard key={it.id} item={it} index={i} />
-          ))}
-        </Row>
       </div>
     </div>
   );

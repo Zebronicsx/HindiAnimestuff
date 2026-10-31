@@ -26,7 +26,10 @@
   @keyframes pulseGlow { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
 }
 
-html { background: var(--color-ink); }
+html { background: var(--color-ink); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+#root { min-height: 100svh; }
+img, video, svg { max-width: 100%; }
+body { overflow-x: clip; touch-action: manipulation; overscroll-behavior-y: none; }
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 
@@ -153,3 +156,20 @@ video::-webkit-media-controls-panel { background: transparent; }
 
 /* select dropdown dark */
 select { color-scheme: dark; }
+
+/* ---------- mobile: locked, app-like canvas ---------- */
+@media (max-width: 640px) {
+  .app-title { font-size: clamp(3.05rem, 16.2vw, 5.2rem); line-height: 0.86; }
+  .row-track { padding-left: 0; padding-right: 1rem; }
+  .glitch { max-width: 100%; }
+  .grain::before, .scanlines::after { display: none; }
+}
+@media (max-width: 380px) {
+  .app-title { font-size: clamp(2.85rem, 15.6vw, 4.2rem); }
+}
+
+/* iOS PWA safe areas */
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+@media (display-mode: standalone) {
+  body { padding-top: env(safe-area-inset-top); }
+}

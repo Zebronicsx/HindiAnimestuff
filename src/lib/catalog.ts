@@ -38,6 +38,12 @@ import { emblemImg } from "../assets/images";
 
 const WORKER = "https://icy-feather-221c.jakcminasi.workers.dev/?id=";
 const TMDB = "https://image.tmdb.org/t/p/original/";
+const CREDIT = "[Visit On Telegram @HindiAnimestuff] ";
+
+/** keep the source credit that every upstream file name starts with */
+function withCredit(name: string): string {
+  return name.startsWith("[Visit On Telegram") ? name : CREDIT + name;
+}
 
 const CATEGORIES = ["anime", "movies", "series"] as const;
 const TYPES = ["TV Series", "Movie", "OVA"] as const;
@@ -51,7 +57,7 @@ function decodeUrl(value: string | null | undefined): string | undefined {
     const bar = rest.indexOf("|");
     if (bar === -1) return WORKER + rest;
     const id = rest.slice(0, bar);
-    const name = rest.slice(bar + 1);
+    const name = withCredit(rest.slice(bar + 1));
     return `${WORKER}${id}&name=${encodeURIComponent(name)}`;
   }
   if (value[0] === "T") return TMDB + value.slice(1);

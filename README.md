@@ -121,3 +121,24 @@ For real in-browser playback of every title you need MP4/HLS links or a transcod
 `localStorage` stores only My List and watch progress (last 60 entries).
 No analytics, no cookies, no accounts. If storage is blocked (private mode / `file://`),
 the site still works — saving and resume are simply disabled.
+
+---
+
+## 6. Mobile / app behaviour
+
+- App-style bottom navigation (Home · Anime · Movies · Series · My List) with an action dock on
+  title pages (Watch · Download · Save).
+- Safe-area padding (`env(safe-area-inset-*)`), `viewport-fit=cover`, no horizontal scroll and no
+  long-press/zoom gaps on phones from 320 px upward.
+- `site.webmanifest` + icons in `public/icons/` enable **Install app** on Android/desktop Chrome
+  (iOS: Share → Add to Home Screen). The header install button and the footer CTA use the same flow.
+- The PWA icon is the oni-mask artwork (`public/app-icon.png`, embedded as `emblemImg`).
+
+## 7. Link privacy
+
+Raw file URLs are never placed in the DOM, anchors, tooltips or clipboard. Downloads are started
+through a hidden, sandboxed iframe; the player holds the URL only in the `src` of its `<video>`.
+There is no copy-link button anywhere and no `href` points to a media host. Every upstream file name
+keeps its original `[Visit On Telegram @HindiAnimestuff]` credit, displayed in the player's file line.
+
+> Browsers still expose URLs in DevTools / network logs — this protects the UI surface, not the client.

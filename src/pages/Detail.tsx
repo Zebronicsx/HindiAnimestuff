@@ -4,7 +4,6 @@ import {
   Captions,
   Check,
   Clock,
-  Copy,
   Download,
   Flame,
   Languages,
@@ -16,7 +15,6 @@ import {
 import {
   AnimeItem,
   episodeList,
-  fileNameFromUrl,
   firstEpisode,
   formatOf,
   getMyList,
@@ -27,7 +25,7 @@ import {
   qualitiesFor,
   toggleMyList,
 } from "../lib/catalog";
-import { copyLink, triggerDownload } from "../lib/download";
+import { triggerDownload } from "../lib/download";
 import { href } from "../lib/router";
 import Row from "../components/Row";
 import PosterCard from "../components/PosterCard";
@@ -85,13 +83,13 @@ export default function Detail({
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/75 to-ink/35" />
         <div className="pointer-events-none absolute -left-32 top-10 h-96 w-96 rounded-full bg-oni/15 blur-[110px]" />
 
-        <div className="relative mx-auto grid max-w-7xl gap-10 px-5 pb-14 pt-12 md:grid-cols-[250px_1fr] md:px-8 lg:grid-cols-[300px_1fr]">
+        <div className="relative mx-auto grid max-w-7xl gap-7 px-4 pb-10 pt-8 sm:px-5 sm:pb-14 sm:pt-12 md:grid-cols-[250px_1fr] md:px-8 lg:grid-cols-[300px_1fr]">
           {/* poster */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: EASE }}
-            className="mx-auto w-[200px] sm:w-[240px] md:w-full"
+            className="mx-auto w-[170px] sm:w-[240px] md:w-full"
           >
             <div className="relative overflow-hidden rounded-2xl border border-oni/40 shadow-[0_30px_90px_-18px_rgba(255,42,42,0.55)]" style={{ aspectRatio: "2/3" }}>
               <img src={poster(item, "w500")} alt={item.title} className="h-full w-full object-cover" />
@@ -143,7 +141,7 @@ export default function Detail({
               ))}
             </motion.div>
 
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.48 }} className="mt-6 max-w-3xl text-sm md:text-[15px] leading-relaxed text-paper/65">
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.48 }} className="mt-5 line-clamp-4 max-w-3xl text-[13px] leading-relaxed text-paper/65 sm:mt-6 sm:line-clamp-none sm:text-sm md:text-[15px]">
               {item.description}
             </motion.p>
 
@@ -155,49 +153,91 @@ export default function Detail({
             )}
 
             {sourceFormat && (
-              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.56 }} className="mt-4 flex max-w-2xl flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-ash">
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.56 }} className="mt-3 flex max-w-2xl flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ash sm:mt-4 sm:text-[11px] sm:tracking-[0.16em]">
                 <span className="border border-line bg-panel px-2 py-1 text-paper/70">Source: {sourceFormat}</span>
                 <span>Browser can't open MKV — download for VLC / MX Player. MP4 streams instantly.</span>
               </motion.p>
             )}
 
             {/* actions */}
-            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.7, ease: EASE }} className="mt-9 flex flex-wrap items-center gap-4">
+            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.7, ease: EASE }} className="mt-6 hidden flex-wrap items-center gap-3 sm:mt-9 sm:flex sm:gap-4">
               <a
                 href={firstWatch}
                 data-hover
-                className="slash-sweep group flex items-center gap-3 bg-oni px-8 py-4 text-xs font-bold uppercase tracking-[0.3em] text-white transition-colors hover:bg-oni-deep cut-corner"
+                className="slash-sweep group flex items-center justify-center gap-3 whitespace-nowrap bg-oni px-8 py-4 text-xs font-bold uppercase tracking-[0.3em] text-white transition-colors hover:bg-oni-deep cut-corner"
               >
                 <Play className="h-4 w-4 fill-current transition-transform group-hover:scale-125" />
                 Watch Now
               </a>
               <button
+                onClick={() => { setMode("download"); requestAnimationFrame(() => document.getElementById("sources")?.scrollIntoView({ behavior: "smooth", block: "start" })); }}
+                data-hover
+                className="flex items-center justify-center gap-3 whitespace-nowrap border border-spark/40 bg-spark/10 px-8 py-4 text-xs font-bold uppercase tracking-[0.3em] text-spark transition-all hover:bg-spark hover:text-ink"
+              >
+                <Download className="h-4 w-4" />
+                Download
+              </button>
+              <button
                 onClick={() => toggleMyList(item.id)}
                 data-hover
-                className={`flex items-center gap-3 border px-8 py-4 text-xs font-bold uppercase tracking-[0.3em] transition-all ${
+                className={`flex items-center justify-center gap-3 whitespace-nowrap border px-8 py-4 text-xs font-bold uppercase tracking-[0.3em] transition-all ${
                   inList
                     ? "border-oni bg-oni/10 text-oni"
                     : "border-paper/25 text-paper hover:border-oni hover:text-oni"
                 }`}
               >
                 {inList ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                {inList ? "In Vault" : "Save to List"}
+                {inList ? "In Vault" : "Save"}
               </button>
             </motion.div>
           </div>
         </div>
       </div>
 
+
+      {/* ---------- mobile action dock ---------- */}
+      <div
+        className="fixed inset-x-0 z-[70] border-t border-line bg-ink/95 px-3 py-2.5 backdrop-blur-xl lg:hidden"
+        style={{ bottom: "calc(61px + env(safe-area-inset-bottom))" }}
+      >
+        <div className="grid grid-cols-[1.35fr_1fr_auto] items-stretch gap-2">
+          <a
+            href={firstWatch}
+            data-hover
+            className="slash-sweep flex min-h-[44px] items-center justify-center gap-2 bg-oni px-3 text-[10.5px] font-bold uppercase tracking-[0.16em] text-white cut-corner-sm"
+          >
+            <Play className="h-3.5 w-3.5 fill-current" /> {mode === "download" ? "Watch" : "Watch Now"}
+          </a>
+          <button
+            onClick={() => { setMode("download"); requestAnimationFrame(() => document.getElementById("sources")?.scrollIntoView({ behavior: "smooth", block: "start" })); }}
+            data-hover
+            className="flex min-h-[44px] items-center justify-center gap-2 border border-spark/40 bg-spark/10 px-3 text-[10.5px] font-bold uppercase tracking-[0.16em] text-spark cut-corner-sm"
+          >
+            <Download className="h-3.5 w-3.5" /> Download
+          </button>
+          <button
+            onClick={() => toggleMyList(item.id)}
+            data-hover
+            aria-label="Save to my list"
+            className={`grid w-12 place-items-center border transition-colors cut-corner-sm ${
+              inList ? "border-oni bg-oni/15 text-oni" : "border-line text-paper/70"
+            }`}
+          >
+            {inList ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+          </button>
+        </div>
+      </div>
+
       {/* ---------- mode switch ---------- */}
-      <div className="sticky top-16 z-40 border-y border-line bg-ink/85 backdrop-blur-xl md:top-20">
-        <div className="mx-auto flex max-w-7xl items-center justify-center gap-3 px-5 py-3.5 md:px-8">
+      <div id="sources" className="sticky top-16 z-40 scroll-mt-20 border-y border-line bg-ink/85 backdrop-blur-xl md:top-20">
+        <div className="mx-auto flex max-w-7xl items-center justify-center gap-2 px-4 py-3 sm:gap-3 sm:px-5 md:px-8 md:py-3.5">
           <ModeButton active={mode === "watch"} onClick={() => setMode("watch")} icon={<Play className="h-3.5 w-3.5 fill-current" />} label="Watch Online" jp="見る" />
           <ModeButton active={mode === "download"} onClick={() => setMode("download")} icon={<Download className="h-3.5 w-3.5" />} label="Download" jp="保存" />
         </div>
       </div>
 
       {/* ---------- content ---------- */}
-      <div className="mx-auto max-w-7xl px-5 py-12 md:px-8">
+      <div className="mx-auto max-w-7xl px-4 pb-28 pt-8 sm:px-5 sm:py-12 md:px-8">
         {mode === "watch" ? <WatchSection item={item} eps={eps} /> : <DownloadSection item={item} eps={eps} />}
       </div>
 
@@ -239,7 +279,7 @@ function ModeButton({
     <button
       onClick={onClick}
       data-hover
-      className={`flex items-center gap-2.5 px-6 py-3 text-[11px] font-bold uppercase tracking-[0.25em] transition-all duration-300 cut-corner-sm md:px-9 ${
+      className={`flex flex-1 items-center justify-center gap-2 whitespace-nowrap px-2 py-3 text-[10px] font-bold uppercase tracking-[0.1em] transition-all duration-300 sm:flex-none sm:gap-2.5 sm:px-6 sm:text-[11px] sm:tracking-[0.25em] md:px-9 cut-corner-sm ${
         active
           ? "slash-sweep bg-oni text-white shadow-[0_10px_35px_-8px_rgba(255,42,42,0.8)]"
           : "border border-line text-ash hover:border-oni/60 hover:text-paper"
@@ -247,7 +287,7 @@ function ModeButton({
     >
       {icon}
       {label}
-      <span className={`font-jp text-[10px] ${active ? "text-white/80" : "text-oni/70"}`}>{jp}</span>
+      <span className={`hidden font-jp text-[10px] sm:inline ${active ? "text-white/80" : "text-oni/70"}`}>{jp}</span>
     </button>
   );
 }
@@ -344,13 +384,13 @@ function DownloadSection({ item, eps }: { item: AnimeItem; eps: string[] }) {
                 <span className="hidden font-jp text-[10px] tracking-[0.2em] text-ash sm:block">
                   {item.runtime} · マルチオーディオ
                 </span>
-                <div className="ml-auto flex gap-2">
+                <div className="ml-auto flex w-full justify-end gap-1.5 sm:w-auto sm:gap-2">
                   {qs.map(({ q, url }) => (
                     <button
                       key={q}
                       onClick={() => triggerDownload(url, `${item.title} E${parseInt(ep, 10)} ${q}`)}
                       data-hover
-                      title={`${q} · ${formatOf(url)} · ${fileNameFromUrl(url)}`}
+                      title={`${q} · ${formatOf(url)}`}
                       className={`flex items-center gap-1.5 border bg-ink/60 px-3 py-2 text-[11px] font-bold uppercase tracking-widest transition-all cut-corner-sm ${Q_STYLE[q]}`}
                     >
                       <Download className="h-3 w-3" />
@@ -358,15 +398,7 @@ function DownloadSection({ item, eps }: { item: AnimeItem; eps: string[] }) {
                       <span className="opacity-50">{formatOf(url)}</span>
                     </button>
                   ))}
-                  <button
-                    onClick={() => copyLink(qs[qs.length - 1].url)}
-                    data-hover
-                    title="Copy direct link"
-                    aria-label="Copy direct link"
-                    className="grid place-items-center border border-line bg-ink/60 px-2.5 text-ash transition-colors hover:border-spark hover:text-spark cut-corner-sm"
-                  >
-                    <Copy className="h-3 w-3" />
-                  </button>
+
                 </div>
               </motion.div>
             );

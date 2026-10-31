@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Zap } from "lucide-react";
 import Lenis from "lenis";
-import { AnimeItem, getById, loadCatalog } from "./lib/catalog";
+import { AnimeItem, getById, loadCatalog, preferredQuality, qualitiesFor } from "./lib/catalog";
 import { href, useHashRoute } from "./lib/router";
 import Header from "./components/Header";
 import Loader from "./components/Loader";
@@ -87,7 +87,12 @@ export default function App() {
     if (s0 === "watch" && s1) {
       const item = getById(s1);
       if (!item) return <NotFound />;
-      return <Watch item={item} ep={s2 || "movie"} q={(s3 as "480p" | "720p" | "1080p") || "720p"} />;
+      {
+        const episode = s2 || "movie";
+        const available = qualitiesFor(item, episode === "movie" ? undefined : episode);
+        const requested = available.find((x) => x.q === s3);
+        return <Watch item={item} ep={episode} q={requested?.q ?? preferredQuality(item, episode === "movie" ? undefined : episode)} />;
+      }
     }
 
     return <Home items={items} />;
@@ -121,7 +126,7 @@ export default function App() {
       {items && (
         <>
           {!isWatch && <Header route={route} onSearch={() => setSearchOpen(true)} count={items.length} />}
-          <main>{page}</main>
+          <main className="pb-[68px] lg:pb-0">{page}</main>
           {!isWatch && <Footer />}
           <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} items={items} />
         </>

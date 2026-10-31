@@ -26,7 +26,7 @@ export default function Hero({ items, onRandom }: { items: AnimeItem[]; onRandom
   }, [items]);
 
   return (
-    <section ref={ref} className="relative flex min-h-screen flex-col overflow-hidden">
+    <section ref={ref} className="relative flex min-h-[100svh] flex-col overflow-hidden">
       <motion.div style={{ y: bgY, scale: bgScale }} className="absolute inset-0">
         <img src={heroBg} alt="" className="h-full w-full object-cover object-center" />
       </motion.div>
@@ -43,13 +43,13 @@ export default function Hero({ items, onRandom }: { items: AnimeItem[]; onRandom
         ONI-01 / Signal Live
       </motion.p>
 
-      <motion.div style={{ opacity: fade }} className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 pb-24 pt-40 text-center">
+      <motion.div style={{ opacity: fade }} className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 pb-14 pt-24 text-center sm:px-6 sm:pb-24 sm:pt-40">
         {/* emblem lockup */}
         <motion.div
           initial={{ scale: 0.4, opacity: 0, y: 30 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           transition={{ delay: 0.25, duration: 1, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mb-10"
+          className="relative mb-7 sm:mb-10"
         >
           <div className="absolute -inset-10 animate-pulse-glow rounded-full bg-oni/25 blur-3xl" />
           <svg viewBox="0 0 200 200" className="absolute -inset-9 h-[calc(100%+72px)] w-[calc(100%+72px)] animate-spin-slow">
@@ -57,7 +57,7 @@ export default function Hero({ items, onRandom }: { items: AnimeItem[]; onRandom
             <circle cx="100" cy="4" r="2.5" fill="#ff2a2a" />
           </svg>
           <div className="relative animate-float">
-            <div className="relative h-36 w-36 -skew-x-6 overflow-hidden rounded-[28px] border border-oni/40 shadow-[0_30px_80px_-16px_rgba(255,42,42,0.65)] md:h-44 md:w-44">
+            <div className="relative h-28 w-28 overflow-hidden rounded-[22px] border border-oni/40 shadow-[0_30px_80px_-16px_rgba(255,42,42,0.65)] sm:h-36 sm:w-36 sm:rounded-[28px] md:h-44 md:w-44">
               <img src={emblem} alt="AnimesFreak oni crest" className="h-full w-full object-cover" draggable={false} />
             </div>
             <div className="absolute -bottom-2.5 -right-2.5 grid h-9 w-9 place-items-center rounded-xl bg-oni text-white shadow-[0_6px_20px_rgba(255,42,42,0.7)]">
@@ -71,19 +71,19 @@ export default function Hero({ items, onRandom }: { items: AnimeItem[]; onRandom
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-6 flex items-center gap-3 border border-paper/15 bg-ink/40 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.42em] text-ash backdrop-blur-md"
+          className="mb-5 flex max-w-[92vw] items-center gap-2 border border-paper/15 bg-ink/40 px-3 py-1.5 text-[8px] font-semibold uppercase tracking-[0.28em] text-ash backdrop-blur-md sm:mb-6 sm:gap-3 sm:px-4 sm:py-2 sm:text-[10px] sm:tracking-[0.42em]"
         >
-          <Tv className="h-3.5 w-3.5 text-oni" />
-          Anime OTT Network — Hindi Dub Vault
+          <Tv className="h-3 w-3 shrink-0 text-oni sm:h-3.5 sm:w-3.5" />
+          Anime OTT Network · Hindi Dub
         </motion.div>
 
         {/* giant title */}
         <h1 className="select-none font-display uppercase leading-[0.86] tracking-tight">
-          <span className="block overflow-hidden text-[17vw] text-paper md:text-[9.5rem]">
+          <span className="app-title block max-w-full overflow-hidden text-paper md:text-[9.5rem]">
             <SplitLetters text="ANIMES" delay={0.55} />
           </span>
           <span
-            className="glitch block -skew-x-6 overflow-hidden text-[17vw] text-oni [text-shadow:0_0_50px_rgba(255,42,42,0.45)] md:text-[9.5rem]"
+            className="glitch app-title block max-w-full overflow-hidden text-oni [text-shadow:0_0_50px_rgba(255,42,42,0.45)] md:text-[9.5rem]"
             data-text="FREAK"
           >
             <SplitLetters text="FREAK" delay={0.8} />
@@ -94,7 +94,7 @@ export default function Hero({ items, onRandom }: { items: AnimeItem[]; onRandom
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.15, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-7 max-w-xl text-balance text-sm leading-relaxed text-paper/70 md:text-base"
+          className="mt-5 max-w-xl text-balance px-1 text-[13px] leading-relaxed text-paper/70 sm:mt-7 sm:text-sm md:text-base"
         >
           Anime, movies and web series — <span className="text-spark">watch online</span> or{" "}
           <span className="text-oni">download directly</span>. Hindi dub, multi audio, from 480p to 1080p FHD.{" "}
@@ -105,12 +105,12 @@ export default function Hero({ items, onRandom }: { items: AnimeItem[]; onRandom
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.3, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-10 flex flex-wrap items-center justify-center gap-4"
+          className="mt-7 flex w-full max-w-sm flex-col items-stretch justify-center gap-3 px-2 sm:mt-10 sm:max-w-none sm:flex-row sm:flex-wrap sm:gap-4 sm:px-0"
         >
           <a
             href={href("/anime")}
             data-hover
-            className="slash-sweep group flex items-center gap-3 bg-oni px-8 py-4 text-xs font-bold uppercase tracking-[0.3em] text-white transition-colors hover:bg-oni-deep cut-corner"
+            className="slash-sweep group flex items-center justify-center gap-3 bg-oni px-6 py-3.5 text-[11px] font-bold uppercase tracking-[0.26em] text-white transition-colors hover:bg-oni-deep sm:px-8 sm:py-4 sm:text-xs sm:tracking-[0.3em] cut-corner"
           >
             <Play className="h-4 w-4 fill-current transition-transform group-hover:scale-125" />
             Start Watching
@@ -118,7 +118,7 @@ export default function Hero({ items, onRandom }: { items: AnimeItem[]; onRandom
           <button
             onClick={onRandom}
             data-hover
-            className="flex items-center gap-3 border border-paper/25 bg-ink/30 px-8 py-4 text-xs font-bold uppercase tracking-[0.3em] text-paper backdrop-blur-md transition-all hover:border-oni hover:text-oni"
+            className="flex items-center justify-center gap-3 border border-paper/25 bg-ink/30 px-6 py-3.5 text-[11px] font-bold uppercase tracking-[0.26em] text-paper backdrop-blur-md transition-all hover:border-oni hover:text-oni sm:px-8 sm:py-4 sm:text-xs sm:tracking-[0.3em]"
           >
             Random Freak Pick
             <ChevronDown className="h-4 w-4" />
