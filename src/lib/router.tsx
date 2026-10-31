@@ -27,10 +27,8 @@ export function useHashRoute(): Route {
   return route;
 }
 
-export function navigate(to: string, replace = false) {
-  const target = to.startsWith("/") ? `#${to}` : `#/${to}`;
-  if (replace) window.location.replace(target);
-  else window.location.hash = to.startsWith("/") ? `#${to}` : `#/${to}`;
+export function navigate(to: string) {
+  window.location.hash = to.startsWith("/") ? `#${to}` : `#/${to}`;
 }
 
 export function useNavigate() {

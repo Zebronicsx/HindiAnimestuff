@@ -14,7 +14,7 @@ export default function MyList() {
     <div className="min-h-screen pt-24 md:pt-32">
       <div className="mx-auto max-w-7xl px-5 pb-16 md:px-8">
         <div className="relative mb-10">
-          <p className="pointer-events-none absolute -right-4 -top-8 select-none font-jp text-[9rem] font-black leading-none text-paper/[0.03]">
+          <p aria-hidden className="pointer-events-none absolute -right-4 -top-8 select-none overflow-hidden font-jp text-[5rem] sm:text-[7rem] md:text-[9rem] font-black leading-none text-paper/[0.03]">
             保存
           </p>
           <div className="mb-5 flex items-center gap-4">

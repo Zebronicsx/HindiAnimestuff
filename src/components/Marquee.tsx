@@ -37,7 +37,7 @@ function Track({ reverse = false }: { reverse?: boolean }) {
 /** double tilted marquee strip — signature from the reference */
 export default function MarqueeBand() {
   return (
-    <div className="relative -my-6 select-none py-6">
+    <div className="marquee-frame relative -my-6 select-none py-6">
       <div className="-ml-[3%] w-[106%] -rotate-[1.4deg] bg-oni text-ink shadow-[0_20px_60px_-20px_rgba(255,42,42,0.5)]">
         <Track />
       </div>

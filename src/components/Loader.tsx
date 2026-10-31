@@ -59,7 +59,7 @@ export default function Loader({ ready }: { ready: boolean }) {
         >
           <p className="font-jp text-sm font-bold tracking-[0.5em] text-oni">アニメフリーク</p>
           <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.5em] text-ash">
-            AnimesFreak · Stream the Madness
+            Tuning the signal
           </p>
         </motion.div>
 

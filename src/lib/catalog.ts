@@ -38,16 +38,13 @@ import { emblemImg } from "../assets/images";
 
 const WORKER = "https://icy-feather-221c.jakcminasi.workers.dev/?id=";
 const TMDB = "https://image.tmdb.org/t/p/original/";
-const CREDIT = "[Visit On Telegram @HindiAnimestuff] ";
-
-/** keep the source credit that every upstream file name starts with */
-function withCredit(name: string): string {
-  return name.startsWith("[Visit On Telegram") ? name : CREDIT + name;
-}
 
 const CATEGORIES = ["anime", "movies", "series"] as const;
 const TYPES = ["TV Series", "Movie", "OVA"] as const;
 const QK: Quality[] = ["480p", "720p", "1080p"];
+
+/** Original host naming: [Visit On Telegram @HindiAnimestuff] <file> */
+export const FILE_TAG = "[Visit On Telegram @HindiAnimestuff] ";
 
 /** W<id>|<name>  → worker url · T<path> → tmdb url · anything else = raw */
 function decodeUrl(value: string | null | undefined): string | undefined {
@@ -57,8 +54,9 @@ function decodeUrl(value: string | null | undefined): string | undefined {
     const bar = rest.indexOf("|");
     if (bar === -1) return WORKER + rest;
     const id = rest.slice(0, bar);
-    const name = withCredit(rest.slice(bar + 1));
-    return `${WORKER}${id}&name=${encodeURIComponent(name)}`;
+    const name = rest.slice(bar + 1);
+    // rebuild the exact original filename, tag included
+    return `${WORKER}${id}&name=${encodeURIComponent(FILE_TAG + name)}`;
   }
   if (value[0] === "T") return TMDB + value.slice(1);
   return value;
@@ -171,17 +169,27 @@ export const firstEpisode = (i: AnimeItem) => episodeList(i)[0];
 
 export type MediaFormat = "MP4" | "MKV" | "FILE";
 
-/** resolves the real filename of a worker/direct link */
+/**
+ * Build the exact original download filename (tag included) without ever
+ * exposing the underlying URL anywhere in the UI.
+ */
 export function fileNameFromUrl(url: string): string {
   try {
     const u = new URL(url);
     const n = u.searchParams.get("name");
     if (n) return decodeURIComponent(n);
     const p = decodeURIComponent(u.pathname.split("/").filter(Boolean).pop() || "");
-    return p || "AnimesFreak file";
+    return p || `${FILE_TAG}AnimesFreak.mkv`;
   } catch {
-    return "AnimesFreak file";
+    return `${FILE_TAG}AnimesFreak.mkv`;
   }
+}
+
+/** Never render a raw URL — the UI only ever receives a label. */
+export function safeLinkLabel(url: string): string {
+  const name = fileNameFromUrl(url);
+  const ext = (name.match(/\.(mkv|mp4|avi|webm)$/i)?.[1] ?? "mkv").toLowerCase();
+  return `${FILE_TAG}${name.replace(/\.[^.]+$/, "")}.${ext}`;
 }
 
 export function formatOf(url: string): MediaFormat {

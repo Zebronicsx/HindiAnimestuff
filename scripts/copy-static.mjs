@@ -1,5 +1,14 @@
-import { copyFileSync, existsSync, mkdirSync, statSync } from "node:fs";
-import { dirname } from "node:path";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+
+/**
+ * Post-build packaging.
+ *
+ * 1. dist/index.html  — Vite output (single self-contained file)
+ * 2. deploy/index.html + deploy assets — drag-and-drop upload folder
+ * 3. index.html       — compiled site at the project root, so hosting the
+ *                       root file also works like plain HTML
+ * 4. index.source.html is restored by predev / prebuild for development
+ */
 
 const source = "dist/index.html";
 const target = "deploy/index.html";
@@ -9,28 +18,23 @@ if (!existsSync(source)) {
   throw new Error(`Missing ${source}; Vite must finish before the postbuild step.`);
 }
 
-mkdirSync("deploy", { recursive: true });
+// brand assets for the upload folder / PWA icons
+for (const asset of [
+  "icon-512.png",
+  "icon-maskable-512.png",
+  "apple-touch-icon.png",
+  "manifest.webmanifest",
+]) {
+  const from = `public/${asset}`;
+  if (existsSync(from)) {
+    mkdirSync("deploy", { recursive: true });
+    copyFileSync(from, `deploy/${asset}`);
+  }
+}
+
 copyFileSync(source, target);
 copyFileSync(source, rootTarget);
 
-const mb = (statSync(target).size / 1024 / 1024).toFixed(2);
-console.log(`Static upload ready: ${target} (${mb} MB)`);
-console.log(`Simple HTML ready: ${rootTarget} (compiled self-contained copy)`);
-
-// PWA files used by "Install app": keep them next to the uploadable index.html
-const pwaFiles = [
-  "site.webmanifest",
-  "icons/icon-192.jpg",
-  "icons/icon-512.jpg",
-  "icons/maskable-512.jpg",
-  "icons/apple-touch-icon.jpg",
-  "icons/favicon-96.png",
-];
-for (const file of pwaFiles) {
-  const from = `dist/${file}`;
-  if (!existsSync(from)) continue;
-  const to = `deploy/${file}`;
-  mkdirSync(dirname(to), { recursive: true });
-  copyFileSync(from, to);
-}
-console.log("PWA assets copied to deploy/ (site.webmanifest + icons)");
+const mb = (p) => (statSync(p).size / 1024 / 1024).toFixed(2);
+console.log(`Static upload ready: ${target} (${mb(target)} MB)`);
+console.log(`Simple HTML ready:   ${rootTarget} (${mb(rootTarget)} MB)`);

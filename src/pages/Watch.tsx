@@ -4,6 +4,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  ExternalLink,
   Gauge,
   Maximize,
   Pause,
@@ -18,7 +19,7 @@ import {
 import {
   AnimeItem,
   episodeList,
-  fileNameFromUrl,
+  FILE_TAG,
   fmtTime,
   formatOf,
   getProgress,
@@ -44,13 +45,6 @@ export default function Watch({ item, ep, q }: { item: AnimeItem; ep: string; q:
   const url = current?.url ?? "";
   const activeQ = current?.q ?? q;
 
-  // if the requested quality does not exist for this episode, keep the address bar honest
-  useEffect(() => {
-    if (!current || current.q === q) return;
-    navigate(`/watch/${item.id}/${ep}/${current.q}`, true);
-  }, [current, q, item.id, ep]);
-
-  const fileName = useMemo(() => (url ? fileNameFromUrl(url) : ""), [url]);
   const format = useMemo(() => (url ? formatOf(url) : "FILE"), [url]);
   const isNative = format === "MP4";
 
@@ -133,7 +127,6 @@ export default function Watch({ item, ep, q }: { item: AnimeItem; ep: string; q:
   // MKV usually fails silently (no error event), so a timeout is required.
   useEffect(() => {
     clearTimeout(probeT.current);
-    if (format !== "MP4") return;
     if (phase === "playing") return;
     probeT.current = window.setTimeout(() => {
       const v = video.current;
@@ -208,12 +201,12 @@ export default function Watch({ item, ep, q }: { item: AnimeItem; ep: string; q:
 
   if (!url) {
     return (
-      <div className="grid min-h-[100svh] place-items-center bg-ink px-6 pb-24 pt-20 text-center">
+      <div className="grid min-h-screen place-items-center bg-ink px-6 text-center">
         <div>
           <AlertTriangle className="mx-auto mb-4 h-10 w-10 text-gold/70" />
-          <p className="font-display text-2xl uppercase text-paper/70">No stream found</p>
-          <p className="mt-2 text-sm text-ash">This episode has no uploaded file yet. Pick another episode or quality.</p>
-          <a href={href(`/title/${item.id}`)} className="mt-5 inline-block bg-oni px-6 py-3 text-[11px] font-bold uppercase tracking-[0.24em] text-white cut-corner-sm">
+          <p className="font-display text-2xl uppercase text-paper/70">No stream for this quality</p>
+          <p className="mt-2 text-sm text-ash">This source has no file uploaded for that resolution.</p>
+          <a href={href(`/title/${item.id}`)} className="mt-5 inline-block text-sm font-bold uppercase tracking-widest text-oni hover:underline">
             ← Back to title
           </a>
         </div>
@@ -221,17 +214,16 @@ export default function Watch({ item, ep, q }: { item: AnimeItem; ep: string; q:
     );
   }
 
-  // Browsers can report a duration for MKV but still cannot decode it, so the
-  // guard is based on the real container, not on metadata being present.
-  const showFallback = !forced && (format !== "MP4" || phase === "unsupported");
+  const showFallback =
+    phase === "unsupported" || (phase === "probing" && !forced && !isNative);
 
   return (
     <div className="min-h-screen bg-black">
-      <div ref={wrap} className={`relative select-none bg-black ${showFallback ? "min-h-[calc(100svh-64px)] sm:min-h-0" : ""}`} onMouseMove={poke} onTouchStart={poke}>
+      <div ref={wrap} className="relative select-none bg-black" onMouseMove={poke} onTouchStart={poke}>
         <video
           ref={video}
           src={url}
-          className={`aspect-video max-h-[100svh] w-full bg-black sm:max-h-[86svh] ${showFallback ? "opacity-20 sm:opacity-40" : ""}`}
+          className={`aspect-video max-h-[100svh] w-full bg-black sm:max-h-[86svh] ${showFallback ? "opacity-40" : ""}`}
           onClick={togglePlay}
           onDoubleClick={toggleFull}
           onPlay={() => {
@@ -269,9 +261,6 @@ export default function Watch({ item, ep, q }: { item: AnimeItem; ep: string; q:
             setMuted(v.muted);
           }}
           playsInline
-          disablePictureInPicture
-          onContextMenu={(e) => e.preventDefault()}
-          controlsList="nodownload noremoteplayback noplaybackrate"
         />
 
         {/* center flash */}
@@ -285,15 +274,15 @@ export default function Watch({ item, ep, q }: { item: AnimeItem; ep: string; q:
 
         {/* ---------- top bar ---------- */}
         <div
-          className={`absolute inset-x-0 top-0 z-40 bg-gradient-to-b from-black/85 to-transparent px-4 pb-12 pt-4 transition-all duration-500 sm:px-6 ${
-            showFallback || (showUI && phase === "playing") ? "opacity-100" : "pointer-events-none opacity-0"
+          className={`absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-black/85 to-transparent px-4 pb-12 pt-4 transition-all duration-500 sm:px-6 ${
+            showUI && phase === "playing" ? "opacity-100" : "pointer-events-none opacity-0"
           }`}
         >
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-4">
             <a
               href={href(`/title/${item.id}`)}
               data-hover
-              aria-label="Back to title" className="grid h-10 w-10 shrink-0 place-items-center border border-paper/30 bg-ink/80 text-paper backdrop-blur transition-colors hover:border-oni hover:text-oni"
+              className="grid h-10 w-10 place-items-center border border-line bg-ink/70 text-paper/80 backdrop-blur transition-colors hover:border-oni hover:text-oni"
             >
               <ChevronLeft className="h-4 w-4" />
             </a>
@@ -313,8 +302,8 @@ export default function Watch({ item, ep, q }: { item: AnimeItem; ep: string; q:
 
         {/* ---------- bottom controls ---------- */}
         <div
-          className={`absolute inset-x-0 bottom-0 z-40 bg-gradient-to-t from-black/95 via-black/70 to-transparent px-4 pb-4 pt-16 transition-all duration-500 sm:px-6 ${
-            showUI && phase === "playing" && !showFallback ? "opacity-100" : "pointer-events-none opacity-0"
+          className={`absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/90 via-black/50 to-transparent px-4 pb-4 pt-16 transition-all duration-500 sm:px-6 ${
+            showUI && phase === "playing" ? "opacity-100" : "pointer-events-none opacity-0"
           }`}
         >
           <div className="relative mb-4 h-[14px]">
@@ -365,7 +354,7 @@ export default function Watch({ item, ep, q }: { item: AnimeItem; ep: string; q:
             </span>
 
             <div className="ml-auto flex items-center gap-1.5 sm:gap-2.5">
-              <div className="no-scrollbar flex max-w-full overflow-x-auto border border-paper/15">
+              <div className="flex border border-paper/15">
                 {qs.map(({ q: qq, url: qu }) => (
                   <button
                     key={qq}
@@ -438,9 +427,9 @@ export default function Watch({ item, ep, q }: { item: AnimeItem; ep: string; q:
 
         {/* ---------- format guard / player fallback ---------- */}
         {showFallback && (
-          <div className="absolute inset-0 z-30 flex flex-col items-center justify-start overflow-y-auto bg-ink/95 px-4 pb-8 pt-20 text-center backdrop-blur blueprint-oni sm:justify-center sm:px-5 sm:py-10">
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center overflow-y-auto bg-ink/92 px-5 py-10 text-center backdrop-blur blueprint-oni">
             <div className="pointer-events-none absolute inset-0 grid place-items-center">
-              <span className="hidden text-stroke font-display text-[18vw] uppercase leading-none opacity-20 select-none sm:inline">MKV</span>
+              <span className="text-stroke font-display text-[18vw] uppercase leading-none opacity-20 select-none">MKV</span>
             </div>
 
             <div className="relative flex w-full max-w-xl flex-col items-center">
@@ -474,13 +463,15 @@ export default function Watch({ item, ep, q }: { item: AnimeItem; ep: string; q:
                 >
                   <Download className="h-4 w-4" /> Download {activeQ} · {format}
                 </button>
-                <button
-                  onClick={() => triggerDownload(url, `${item.title} ${activeQ} backup`)}
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   data-hover
                   className="flex items-center justify-center gap-2.5 border border-paper/25 px-7 py-3.5 text-[11px] font-bold uppercase tracking-[0.24em] text-paper transition-colors hover:border-oni hover:text-oni"
                 >
-                  <Download className="h-4 w-4" /> Mirror download
-                </button>
+                  <ExternalLink className="h-4 w-4" /> Open direct link
+                </a>
               </div>
 
               <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-ash">
@@ -495,7 +486,8 @@ export default function Watch({ item, ep, q }: { item: AnimeItem; ep: string; q:
               </div>
 
               <p className="mt-5 font-mono text-[9.5px] uppercase tracking-[0.2em] leading-relaxed text-ash/70">
-                {phase === "probing" ? "Testing native playback… " : ""}File: {fileName.length > 96 ? `${fileName.slice(0, 96)}…` : fileName}
+                {phase === "probing" ? "Testing native playback… " : ""}
+                {FILE_TAG}Episode {isMovie ? "" : `· E${parseInt(ep, 10)} `}· {activeQ} · {format}
               </p>
             </div>
           </div>
@@ -503,7 +495,7 @@ export default function Watch({ item, ep, q }: { item: AnimeItem; ep: string; q:
       </div>
 
       {/* ---------- below player ---------- */}
-      <div className="mx-auto max-w-7xl bg-ink px-4 py-7 pb-24 sm:px-5 md:px-8 lg:pb-10">
+      <div className="mx-auto max-w-7xl bg-ink px-5 py-10 md:px-8">
         <div className="mb-9 flex flex-wrap items-center gap-3">
           {!isMovie && (
             <>
@@ -542,7 +534,7 @@ export default function Watch({ item, ep, q }: { item: AnimeItem; ep: string; q:
               <span className="h-px flex-1 bg-line" />
               <span className="font-mono text-[10px] tracking-[0.25em] text-ash">{eps.length} EP</span>
             </div>
-            <div className="grid grid-cols-5 gap-1.5 sm:grid-cols-8 sm:gap-2 lg:grid-cols-12">
+            <div className="grid grid-cols-5 gap-2 sm:grid-cols-8 lg:grid-cols-12">
               {eps.map((e) => {
                 const active = e === ep;
                 return (
@@ -573,9 +565,6 @@ export default function Watch({ item, ep, q }: { item: AnimeItem; ep: string; q:
             {item.title} {!isMovie && <span className="text-oni">· EP {parseInt(ep, 10)}</span>}
           </h4>
           <p className="relative mt-3 max-w-3xl text-sm leading-relaxed text-paper/55">{item.description}</p>
-          <p className="relative mt-4 break-all font-mono text-[10px] uppercase tracking-[0.18em] text-ash">
-            File: {fileName}
-          </p>
           <p className="relative mt-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ash">
             Audio: {item.languages.join(", ")} · Subs: {item.subtitle || "N/A"}
           </p>

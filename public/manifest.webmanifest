@@ -1,0 +1,36 @@
+{
+  "name": "AnimesFreak — Anime OTT Network",
+  "short_name": "AnimesFreak",
+  "description": "Watch online or download anime, movies and web series in Hindi dub. 480p, 720p HD and 1080p FHD multi audio.",
+  "id": "/",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "display_override": ["standalone", "fullscreen", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#06060b",
+  "theme_color": "#06060b",
+  "categories": ["entertainment", "video"],
+  "lang": "en",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
