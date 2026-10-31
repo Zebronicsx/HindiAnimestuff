@@ -1,20 +1,13 @@
 {
   "hosting": {
-    "target": "hindianimestuff",
-    "public": "output",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "public": "dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "headers": [
       {
-        "source": "**/assets/@(style|app|search|pagination|page-loader|notifications|tg-popup|favourites-page).@(js|css)",
+        "source": "/index.html",
         "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=31536000, immutable"
-          }
+          { "key": "Cache-Control", "value": "no-cache" },
+          { "key": "X-Content-Type-Options", "value": "nosniff" }
         ]
       }
     ]
