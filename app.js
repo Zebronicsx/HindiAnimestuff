@@ -1,5 +1,5 @@
 
-/* Aniclux — Anime Streaming */
+/* AnimesFreak — Anime Streaming */
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -55,60 +55,16 @@ function isStreamableUrl(url) {
     const host = new URL(url).hostname.toLowerCase();
     if (/t\.me|telegram\.me|filesdl\.in|mediafire|mega\.nz|drive\.google/.test(host)) return false;
     if (/workers\.dev|r2\.dev|cloudflare|b-cdn|bunnycdn/.test(host)) return true;
-    if (isAbyssUrl(url)) return true;
     return true;
   } catch (_) {
     return false;
   }
 }
 
-/** Abyss / Hydrax embed detection (short.ink, short.icu, abysscdn, playhydrax, player.abyssplayer) */
-function isAbyssUrl(url) {
-  if (!url || typeof url !== 'string') return false;
-  try {
-    const host = new URL(url).hostname.toLowerCase();
-    return /^(?:www\.)?(?:short\.ink|short\.icu|abysscdn\.com|playhydrax\.com|player\.abyssplayer\.com|abyssplayer\.com|hydrax\.net)$/.test(host)
-      || host.endsWith('.playhydrax.com')
-      || host.endsWith('.abysscdn.com');
-  } catch (_) {
-    return false;
-  }
-}
-
-/** Build a canonical Abyss embed URL for iframe src */
-function getAbyssEmbedUrl(url) {
+// TMDB serves posters as "original" (multi-MB). Request right-sized variants instead — the biggest mobile speed win.
+function img(url, size) {
   if (!url) return '';
-  try {
-    const u = new URL(url);
-    const host = u.hostname.toLowerCase();
-    let id = '';
-    if (/short\.ink|short\.icu/.test(host)) {
-      id = u.pathname.replace(/^\/+|\/+$/g, '').split('/')[0] || '';
-    } else {
-      id = u.searchParams.get('v') || u.pathname.replace(/^\/+|\/+$/g, '').split('/').pop() || '';
-    }
-    if (!id) return url;
-    return 'https://player.abyssplayer.com/?v=' + encodeURIComponent(id);
-  } catch (_) {
-    return url;
-  }
-}
-
-function clearAbyssIframe() {
-  const iframe = $('#abyssPlayer');
-  if (!iframe) return;
-  iframe.removeAttribute('src');
-  iframe.hidden = true;
-  iframe.classList.remove('active');
-}
-
-function clearNativeVideo() {
-  const video = $('#mainPlayer');
-  if (!video) return;
-  video.onerror = null;
-  video.removeAttribute('src');
-  try { video.load(); } catch (_) {}
-  video.classList.remove('active');
+  return String(url).replace('/t/p/original/', '/t/p/' + (size || 'w342') + '/');
 }
 
 function findAnimeBySlug(slug) {
@@ -238,42 +194,9 @@ async function init() {
     try { setupTheme(); } catch (e) { console.warn(e); }
     try { setupBackTop(); } catch (e) { console.warn(e); }
     try { setupSideMenu(); } catch (e) { console.warn(e); }
-    try { setupPlayerProtection(); } catch (e) { console.warn(e); }
 
     try { renderHome(); } catch (e) { console.warn('renderHome', e); }
     try { handleRoute(); } catch (e) { console.warn('handleRoute', e); }
-
-    // Full catalog in background
-    const fullUrls = [assetUrl('anime_data.json'), './anime_data.json', 'anime_data.json'];
-    for (const url of fullUrls) {
-      try {
-        const res = await fetch(url, { cache: 'no-store' });
-        if (!res.ok) continue;
-        const full = await res.json();
-        if (Array.isArray(full) && full.length) {
-          ANIMES = full;
-          console.log('Loaded full data', full.length);
-          const mg = $('#menuGenres'); if (mg) { mg.dataset.ready = ''; }
-          try { setupSideMenu(); } catch (_) {}
-          // Refresh open detail with full episode links
-          if (currentAnime && currentAnime.id) {
-            const fresh = ANIMES.find(a => String(a.id) === String(currentAnime.id));
-            if (fresh) {
-              currentAnime = fresh;
-              try { showDetail(fresh); } catch (_) {}
-            }
-          } else {
-            try {
-              if (!location.pathname.includes('/anime/')) renderHome();
-              else handleRoute();
-            } catch (_) {}
-          }
-        }
-        break;
-      } catch (e) {
-        console.warn('full data', url, e);
-      }
-    }
   } catch (e) {
     showLoadError(e && e.message ? e.message : e);
   }
@@ -338,6 +261,7 @@ function handleRoute() {
   }
   if (parts[0] === 'dmca') {
     showPage('dmca');
+    setupDmcaForm();
     return;
   }
   if (parts[0] === 'genre' && parts[1]) {
@@ -352,6 +276,12 @@ function handleRoute() {
   if (parts[0] === 'movies') {
     showPage('movies');
     renderCategoryGrid('movies');
+    return;
+  }
+  const STATIC = { request: setupRequestForm, dmca: setupDmcaForm, contact: setupContactForm, report: setupReportForm, about: () => { document.title = 'About — AnimesFreak'; }, faq: () => { document.title = 'FAQ — AnimesFreak'; }, privacy: () => { document.title = 'Privacy Policy — AnimesFreak'; }, terms: () => { document.title = 'Terms of Service — AnimesFreak'; } };
+  if (STATIC[parts[0]]) {
+    showPage(parts[0]);
+    STATIC[parts[0]]();
     return;
   }
   if (parts[0] === 'watchlist') {
@@ -371,16 +301,7 @@ function handleRoute() {
 
 
 function showPage(name) {
-  const map = { home: 'page-home', search: 'page-search', series: 'page-series', movies: 'page-movies', watchlist: 'page-watchlist', trending: 'page-trending', letter: 'page-letter', detail: 'page-detail', report: 'page-report', dmca: 'page-dmca', genre: 'page-genre' };
-  // Stop playback when leaving the detail/watch view
-  if (name !== 'detail') {
-    try {
-      clearNativeVideo();
-      clearAbyssIframe();
-      const wrap = $('#playerWrap');
-      if (wrap) wrap.classList.remove('mode-abyss', 'mode-native', 'playing', 'show-controls');
-    } catch (_) {}
-  }
+  const map = { home: 'page-home', search: 'page-search', series: 'page-series', movies: 'page-movies', watchlist: 'page-watchlist', trending: 'page-trending', letter: 'page-letter', detail: 'page-detail', report: 'page-report', dmca: 'page-dmca', genre: 'page-genre', request: 'page-request', contact: 'page-contact', about: 'page-about', faq: 'page-faq', privacy: 'page-privacy', terms: 'page-terms' };
   $$('.page').forEach(p => p.classList.remove('active'));
   const id = map[name] || 'page-home';
   const el = document.getElementById(id);
@@ -441,7 +362,7 @@ function closeSideMenu() {
 }
 
 function renderTrendingPage() {
-  document.title = 'Trending — Aniclux';
+  document.title = 'Trending — AnimesFreak';
   const grid = $('#trendingGrid');
   if (!grid) return;
   let list = ANIMES.filter(a => a.trending);
@@ -478,7 +399,7 @@ function setupSearch() {
       } else {
         results.innerHTML = matches.map(a => `
           <div class="search-item" data-id="${a.id}">
-            <img src="${a.poster || ''}" alt="" loading="lazy" onerror="this.src='https://via.placeholder.com/40x56?text=?'" />
+            <img src="${img(a.poster, 'w92')}" alt="" loading="lazy" decoding="async" width="40" height="56" onerror="this.src='https://via.placeholder.com/40x56?text=?'" />
             <div class="search-item-info">
               <h4>${escapeHtml(a.title)}</h4>
               <span>${a.season || ''} · ${a.rating || '?'} ★</span>
@@ -505,7 +426,7 @@ function setupSearch() {
 
 // ===== HOME =====
 function renderHome() {
-  document.title = 'Aniclux — Watch Anime Online Free';
+  document.title = 'AnimesFreak — Watch Anime Online Free';
   const list = applyLangFilter(ANIMES);
   let trending = list.filter(a => a.trending);
   if (!trending.length) {
@@ -593,19 +514,19 @@ function renderAZ() {
 }
 
 function getHistory() {
-  try { return JSON.parse(localStorage.getItem('aniclux-history') || '[]'); } catch (_) { return []; }
+  try { return JSON.parse(localStorage.getItem('animesfreak-history') || '[]'); } catch (_) { return []; }
 }
 function pushHistory(id) {
   let h = getHistory().filter(x => String(x) !== String(id));
   h.unshift(id);
-  localStorage.setItem('aniclux-history', JSON.stringify(h.slice(0, 40)));
+  localStorage.setItem('animesfreak-history', JSON.stringify(h.slice(0, 40)));
 }
 
 function renderLetterPage(letter) {
   showPage('letter');
   const title = $('#letterTitle');
   if (title) title.textContent = letter === '#' ? '0–9' : ('Letter ' + letter);
-  document.title = (title ? title.textContent : letter) + ' — Aniclux';
+  document.title = (title ? title.textContent : letter) + ' — AnimesFreak';
   const grid = $('#letterGrid');
   if (!grid) return;
   const list = ANIMES.filter(a => {
@@ -621,7 +542,7 @@ function renderLetterPage(letter) {
 function setupHero(items) {
   if (!items || !items.length) {
     const t = $('#heroTitle');
-    if (t) t.textContent = 'Welcome to Aniclux';
+    if (t) t.textContent = 'Welcome to AnimesFreak';
     return;
   }
   let idx = 0;
@@ -635,7 +556,7 @@ function setupHero(items) {
     const a = items[i];
     if (!a) return;
     const bg = $('#heroBg');
-    if (bg) bg.style.backgroundImage = `url(${a.poster || ''})`;
+    if (bg) bg.style.backgroundImage = `url(${img(a.poster, 'w780')})`;
     const title = $('#heroTitle');
     if (title) title.textContent = a.title || 'Untitled';
     const desc = $('#heroDesc');
@@ -679,7 +600,7 @@ function posterCardHTML(a) {
   return `
     <div class="poster-card" data-id="${a.id}">
       <div class="poster-img-wrap">
-        <img src="${a.poster || ''}" alt="${escapeHtml(a.title)}" loading="lazy" onerror="this.src='https://via.placeholder.com/200x300?text=No+Poster'" />
+        <img src="${img(a.poster, 'w342')}" alt="${escapeHtml(a.title)}" loading="lazy" decoding="async" width="200" height="300" onerror="this.src='https://via.placeholder.com/200x300?text=No+Poster'" />
         <div class="poster-overlay"><div class="play-icon"></div></div>
         ${a.trending ? '<span class="badge">Hot</span>' : ''}
         ${rating ? `<span class="rating-badge">★ ${rating}</span>` : ''}
@@ -760,11 +681,42 @@ function renderTrending() {
 }
 
 // ===== DETAIL / PLAYER =====
-function showDetail(anime) {
+// Lazy, per-title episode data (data/<id>.json — see the split at build time).
+// Only the ONE title someone actually opens gets its links downloaded,
+// instead of every title's links shipping on every single page load.
+const _fullDataCache = Object.create(null);
+async function loadFullAnimeData(id) {
+  if (!id) return null;
+  if (_fullDataCache[id]) return _fullDataCache[id];
+  const urls = [assetUrl(`data/${id}.json`), `./data/${id}.json`, `data/${id}.json`];
+  for (const url of urls) {
+    try {
+      const res = await fetch(url, { cache: 'force-cache' });
+      if (!res.ok) continue;
+      const full = await res.json();
+      if (full._enc && full.episode_links) {
+        for (const ep of Object.keys(full.episode_links)) {
+          for (const q of Object.keys(full.episode_links[ep])) {
+            const v = full.episode_links[ep][q];
+            if (v) { try { full.episode_links[ep][q] = atob(v); } catch (_) {} }
+          }
+        }
+        delete full._enc;
+      }
+      _fullDataCache[id] = full;
+      return full;
+    } catch (e) {
+      console.warn('full data', url, e);
+    }
+  }
+  return null;
+}
+
+async function showDetail(anime) {
   currentAnime = anime;
   currentEpisode = null;
   showPage('detail');
-  document.title = (anime.title || 'Anime') + ' — Aniclux';
+  document.title = (anime.title || 'Anime') + ' — AnimesFreak';
   pushHistory(anime.id);
   bindPulseHeart(anime.id || anime.slug || anime.title);
   const wlBtn = $('#watchlistBtn');
@@ -784,8 +736,8 @@ function showDetail(anime) {
     banner.hidden = canStream;
   }
 
-  $('#detailBg').style.backgroundImage = `url(${anime.poster || ''})`;
-  $('#detailPoster').src = anime.poster || '';
+  $('#detailBg').style.backgroundImage = `url(${img(anime.poster, 'w780')})`;
+  $('#detailPoster').src = img(anime.poster, 'w500');
   $('#detailTitle').textContent = anime.title + (anime.season ? ` — ${anime.season}` : '');
   $('#detailMeta').innerHTML = `
     ${anime.rating ? `<span class="rating">★ ${anime.rating}</span>` : ''}
@@ -804,7 +756,7 @@ function showDetail(anime) {
   const wrap = video.closest('.player-wrap');
   video.classList.remove('active');
   video.removeAttribute('src');
-  video.poster = anime.poster || '';
+  video.poster = img(anime.poster, 'w780');
   video.load();
   video.pause();
   
@@ -817,7 +769,7 @@ function showDetail(anime) {
   const placeholder = $('#playerPlaceholder');
   placeholder.classList.remove('hidden');
   if (anime.poster) {
-    placeholder.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.55)), url(${anime.poster})`;
+    placeholder.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.55)), url(${img(anime.poster, 'w780')})`;
     placeholder.style.backgroundSize = 'cover';
     placeholder.style.backgroundPosition = 'center';
   } else {
@@ -833,6 +785,17 @@ function showDetail(anime) {
   if (fill) fill.style.width = '0%';
   if (handle) handle.style.left = '0%';
   if (timeEl) timeEl.textContent = '0:00 / 0:00';
+
+  if (!anime.episode_links || !Object.keys(anime.episode_links).length) {
+    const grid = $('#episodesGrid');
+    if (grid) grid.innerHTML = '<p style="color:var(--text-dim);grid-column:1/-1">Loading episodes…</p>';
+    const full = await loadFullAnimeData(anime.id);
+    if (full) {
+      Object.assign(anime, full); // same object as the ANIMES[] entry, so this updates the shared catalog too
+    }
+    if (currentAnime !== anime) return; // user navigated away while this was loading
+    if (!anime.description && full && full.description) $('#detailDesc').textContent = full.description;
+  }
 
   renderEpisodes(anime);
   // Auto-load first episode / movie if streamable
@@ -974,100 +937,49 @@ function loadVideo(url, allQuals) {
     console.warn('loadVideo: empty url');
     return;
   }
-  console.log('loadVideo', url.slice(0, 80), 'q=', currentQuality);
-
-  const placeholder = $('#playerPlaceholder');
+  if (!isStreamableUrl(url)) {
+    const placeholder = $('#playerPlaceholder');
+    const video = $('#mainPlayer');
+    if (video) { video.removeAttribute('src'); video.classList.remove('active'); }
+    if (placeholder) {
+      placeholder.classList.remove('hidden');
+      placeholder.innerHTML = '<p>This video cannot be streamed in the browser.<br>Please use the <b>Download</b> button below.</p>';
+    }
+    const banner = $('#dlOnlyBanner');
+    if (banner) banner.hidden = false;
+    return;
+  }
   const video = $('#mainPlayer');
-  const iframe = $('#abyssPlayer');
-  const wrap = $('#playerWrap') || (video && video.closest('.player-wrap'));
-  const banner = $('#dlOnlyBanner');
-  const controls = $('#customControls');
+  if (!video) return;
+  const placeholder = $('#playerPlaceholder');
+  const wrap = video.closest('.player-wrap');
+
+  window._currentQuals = allQuals || window._currentQuals || {};
+  window._triedQuals = window._triedQuals || new Set();
+  window._triedQuals.add(currentQuality);
 
   if (window._vCheckTimer) {
     clearInterval(window._vCheckTimer);
     window._vCheckTimer = null;
   }
 
-  window._currentQuals = allQuals || window._currentQuals || {};
-  window._triedQuals = window._triedQuals || new Set();
-  window._triedQuals.add(currentQuality);
-
-  // Non-streamable (Telegram, MediaFire, etc.)
-  if (!isStreamableUrl(url)) {
-    clearNativeVideo();
-    clearAbyssIframe();
-    if (controls) controls.style.display = 'none';
-    if (placeholder) {
-      placeholder.classList.remove('hidden');
-      placeholder.style.pointerEvents = 'auto';
-      placeholder.innerHTML = '<p>This video cannot be streamed in the browser.<br>Please use the <b>Download</b> button below.</p>';
-    }
-    if (banner) banner.hidden = false;
-    if (wrap) wrap.classList.remove('mode-abyss', 'mode-native', 'playing');
-    return;
-  }
-
-  if (banner) banner.hidden = true;
-
-  // —— Abyss / Hydrax iframe path ——
-  if (isAbyssUrl(url)) {
-    clearNativeVideo();
-    if (controls) controls.style.display = 'none';
-    if (wrap) {
-      wrap.classList.remove('mode-native', 'playing', 'show-controls');
-      wrap.classList.add('mode-abyss');
-    }
-    if (placeholder) {
-      placeholder.classList.remove('hidden');
-      placeholder.style.pointerEvents = 'none';
-      placeholder.innerHTML = '<p class="player-loading">Loading player…</p>';
-    }
-    if (iframe) {
-      const embed = getAbyssEmbedUrl(url);
-      iframe.onload = function () {
-        if (placeholder) placeholder.classList.add('hidden');
-      };
-      iframe.onerror = function () {
-        if (placeholder) {
-          placeholder.classList.remove('hidden');
-          placeholder.style.pointerEvents = 'auto';
-          placeholder.innerHTML = '<p><b>Player failed to load</b><br>Try another quality or use <b>Download</b>.</p>';
-        }
-      };
-      iframe.src = embed;
-      iframe.hidden = false;
-      iframe.classList.add('active');
-    }
-    return;
-  }
-
-  // —— Native HTML5 video path (Cloudflare Workers / direct media) ——
-  clearAbyssIframe();
-  if (!video) return;
-  if (controls) controls.style.display = '';
-  if (wrap) {
-    wrap.classList.remove('mode-abyss');
-    wrap.classList.add('mode-native');
-  }
-
+  // Reset previous error handlers
   video.onerror = null;
   video.removeAttribute('src');
-  try { video.load(); } catch (_) {}
+  video.load();
 
   video.setAttribute('playsinline', '');
   video.setAttribute('webkit-playsinline', '');
-  video.setAttribute('controlslist', 'nodownload noplaybackrate');
   video.playsInline = true;
   video.controls = false;
-  video.disablePictureInPicture = true;
-  video.poster = (currentAnime && currentAnime.poster) || '';
+  video.poster = img(currentAnime && currentAnime.poster, 'w780');
   video.src = url;
   video.classList.add('active');
-
   if (placeholder) {
     placeholder.classList.add('hidden');
     placeholder.style.pointerEvents = 'none';
   }
+
   if (wrap) {
     wrap.classList.remove('playing');
     wrap.classList.add('show-controls');
@@ -1087,10 +999,8 @@ function loadVideo(url, allQuals) {
         placeholder.style.pointerEvents = 'auto';
         placeholder.innerHTML = '<p><b>Playback failed</b><br>This quality may be blocked or unsupported on your device.<br>Try another quality button, or use <b>Download</b>.</p>';
       }
-      if (banner) {
-        banner.hidden = false;
-        banner.innerHTML = 'Streaming failed for available qualities. Use <strong>Download</strong> instead.';
-      }
+      const banner = $('#dlOnlyBanner');
+      if (banner) { banner.hidden = false; banner.innerHTML = 'Streaming failed for available qualities. Use <strong>Download</strong> instead.'; }
       return;
     }
     currentQuality = next;
@@ -1284,37 +1194,6 @@ function exitForcedLandscape(wrap) {
   try { screen.orientation?.unlock?.(); } catch (_) {}
 }
 
-/**
- * Client-side player protections (casual deterrence only).
- * Does not claim DRM, download prevention, or resistance to DevTools.
- */
-function setupPlayerProtection() {
-  const wrap = $('#playerWrap') || document.querySelector('.player-wrap');
-  if (!wrap || wrap.dataset.protectReady === '1') return;
-  wrap.dataset.protectReady = '1';
-
-  // Disable context menu on player container (not whole page)
-  wrap.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-  });
-
-  // Discourage text selection / drag of player chrome
-  wrap.addEventListener('selectstart', (e) => {
-    if (!e.target.closest('input, textarea')) e.preventDefault();
-  });
-  wrap.addEventListener('dragstart', (e) => e.preventDefault());
-
-  // Native video: block right-click on the media element itself
-  const video = $('#mainPlayer');
-  if (video) {
-    video.addEventListener('contextmenu', (e) => e.preventDefault());
-    video.setAttribute('controlslist', 'nodownload noplaybackrate');
-    try { video.disablePictureInPicture = true; } catch (_) {}
-  }
-
-  // Abyss iframe is cross-origin — cannot touch its DOM; protections are outer-only
-}
-
 function setupCustomControls() {
   const video = $('#mainPlayer');
   if (!video) return;
@@ -1438,7 +1317,7 @@ function renderTrendingGrid() {
   }
   grid.innerHTML = list.map(a => posterCardHTML(a)).join('');
   bindPosterClicks(grid);
-  document.title = 'Trending — Aniclux';
+  document.title = 'Trending — AnimesFreak';
 }
 
 function renderWatchlist() {
@@ -1446,7 +1325,7 @@ function renderWatchlist() {
   const empty = $('#watchlistEmpty');
   if (!grid) return;
   let ids = [];
-  try { ids = JSON.parse(localStorage.getItem('aniclux-watchlist') || '[]'); } catch (_) {}
+  try { ids = JSON.parse(localStorage.getItem('animesfreak-watchlist') || '[]'); } catch (_) {}
   const list = ids.map(id => ANIMES.find(a => String(a.id) === String(id))).filter(Boolean);
   grid.innerHTML = list.map(a => posterCardHTML(a)).join('');
   bindPosterClicks(grid);
@@ -1455,17 +1334,17 @@ function renderWatchlist() {
 
 function toggleWatchlist(id) {
   let ids = [];
-  try { ids = JSON.parse(localStorage.getItem('aniclux-watchlist') || '[]'); } catch (_) {}
+  try { ids = JSON.parse(localStorage.getItem('animesfreak-watchlist') || '[]'); } catch (_) {}
   const i = ids.indexOf(id);
   if (i >= 0) ids.splice(i, 1);
   else ids.push(id);
-  localStorage.setItem('aniclux-watchlist', JSON.stringify(ids));
+  localStorage.setItem('animesfreak-watchlist', JSON.stringify(ids));
   return ids.includes(id);
 }
 
 function isInWatchlist(id) {
   try {
-    return JSON.parse(localStorage.getItem('aniclux-watchlist') || '[]').includes(id);
+    return JSON.parse(localStorage.getItem('animesfreak-watchlist') || '[]').includes(id);
   } catch (_) { return false; }
 }
 
@@ -1477,7 +1356,7 @@ function setupSearchPage() {
   const status = $('#searchStatus');
   const form = $('#searchForm');
   if (!input || !results) return;
-  document.title = 'Search — Aniclux';
+  document.title = 'Search — AnimesFreak';
 
   // Read ?s= from URL (hindianimestuff style)
   const params = new URLSearchParams(location.search);
@@ -1524,7 +1403,7 @@ function setupSearchPage() {
       const rating = a.rating && a.rating !== '?' ? a.rating : '';
       const meta = [a.type || a.ui_category, a.season, rating ? ('★ ' + rating) : ''].filter(Boolean).join(' · ');
       return `<article class="sr-row" data-id="${a.id}">
-        <img class="sr-poster" src="${a.poster || ''}" alt="" loading="lazy" onerror="this.style.opacity=0.3"/>
+         <img class="sr-poster" src="${img(a.poster, 'w154')}" alt="" loading="lazy" decoding="async" onerror="this.style.opacity=0.3"/>
         <div class="sr-info">
           <h3 class="sr-title">${escapeHtml(a.title)}</h3>
           <p class="sr-meta">${escapeHtml(meta)}</p>
@@ -1569,7 +1448,7 @@ function renderGenrePage(genre) {
   showPage('genre');
   const title = $('#genreTitle');
   if (title) title.textContent = genre;
-  document.title = genre + ' — Aniclux';
+  document.title = genre + ' — AnimesFreak';
   const grid = $('#genreGrid');
   if (!grid) return;
   const list = ANIMES.filter(a => (a.genres || []).some(g => String(g).toLowerCase() === genre.toLowerCase()));
@@ -1577,11 +1456,61 @@ function renderGenrePage(genre) {
   bindPosterClicks(grid);
 }
 
+
+/* ---------- Email (EmailJS) ---------- */
+const EMAILJS_CFG = { publicKey: '56w3ancDyfmhbnEV8', service: 'service_fmdbxah', template: 'template_yfidj4o' };
+let _emailReady = false;
+function isEmail(v) { return /^\S+@\S+\.\S+$/.test(String(v || '').trim()); }
+
+function sendMail(kind, { title = '', name = '', email = '', message = '' }) {
+  if (!window.emailjs) return Promise.reject(new Error('EmailJS not loaded'));
+  if (!_emailReady) { emailjs.init({ publicKey: EMAILJS_CFG.publicKey }); _emailReady = true; }
+  return emailjs.send(EMAILJS_CFG.service, EMAILJS_CFG.template, {
+    page_title: `[${kind}] ${title}`.slice(0, 150),
+    page_url: location.href,
+    from_name: name || email || 'Visitor',
+    reply_to: email,
+    message: `${message}\n\n(${kind} — sender email: ${email})`
+  });
+}
+
+function setFormNote(sel, text, ok) {
+  const el = $(sel);
+  if (!el) return;
+  el.textContent = text;
+  el.classList.toggle('ok', !!ok);
+  el.classList.toggle('err', !ok);
+}
+
+// Wires a <form> to EmailJS: email required, button locks while sending, clear success/error note.
+function bindMailForm(formSel, noteSel, kind, collect, okText) {
+  const form = $(formSel);
+  if (!form || form.dataset.bound) return;
+  form.dataset.bound = '1';
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const f = (sel) => (form.querySelector(sel)?.value || '').trim();
+    const data = collect(f);
+    if (!isEmail(data.email)) { setFormNote(noteSel, 'Please enter a valid email address.', false); return; }
+    const btn = form.querySelector('button[type=submit]');
+    if (btn) { btn.disabled = true; btn.dataset.t = btn.textContent; btn.textContent = 'Sending…'; }
+    sendMail(kind, data).then(() => {
+      setFormNote(noteSel, okText, true);
+      form.reset();
+    }).catch((err) => {
+      console.warn('mail failed', err);
+      setFormNote(noteSel, 'Could not send right now. Please try again in a moment.', false);
+    }).finally(() => {
+      if (btn) { btn.disabled = false; btn.textContent = btn.dataset.t || 'Send'; }
+    });
+  });
+}
+
 function setupComments(animeId) {
   const list = $('#commentList');
   const form = $('#commentForm');
   if (!list || !form) return;
-  const key = 'aniclux-comments-' + animeId;
+  const key = 'animesfreak-comments-' + animeId;
   const load = () => {
     let items = [];
     try { items = JSON.parse(localStorage.getItem(key) || '[]'); } catch (_) {}
@@ -1597,21 +1526,20 @@ function setupComments(animeId) {
     form.dataset.bound = '1';
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const name = ($('#cName')?.value || '').trim() || 'Anon';
+      const name = ($('#cName')?.value || '').trim() || 'Guest';
+      const email = ($('#cEmail')?.value || '').trim();
       const msg = ($('#cMsg')?.value || '').trim();
+      if (!isEmail(email)) { setFormNote('#commentNote', 'Please enter a valid email — it is required to comment.', false); return; }
       if (!msg) return;
       let items = [];
       try { items = JSON.parse(localStorage.getItem(key) || '[]'); } catch (_) {}
       items.unshift({ name, msg, time: new Date().toLocaleString() });
       localStorage.setItem(key, JSON.stringify(items.slice(0, 50)));
-      // Optional EmailJS hook (set window.EMAILJS_CONFIG if you have keys)
-      try {
-        if (window.emailjs && window.EMAILJS_CONFIG) {
-          emailjs.send(window.EMAILJS_CONFIG.service, window.EMAILJS_CONFIG.template, {
-            from_name: name, message: msg, anime_id: animeId, page: location.href
-          });
-        }
-      } catch (_) {}
+      sendMail('Comment', {
+        title: (currentAnime && currentAnime.title) || animeId,
+        name, email, message: msg
+      }).then(() => setFormNote('#commentNote', 'Comment posted — thanks!', true))
+        .catch(() => setFormNote('#commentNote', 'Posted here, but the notification email failed to send.', false));
       form.reset();
       load();
     });
@@ -1619,29 +1547,33 @@ function setupComments(animeId) {
 }
 
 function setupReportForm() {
-  document.title = 'Report — Aniclux';
-  const form = $('#reportForm');
-  const note = $('#reportNote');
-  if (!form || form.dataset.bound) return;
-  form.dataset.bound = '1';
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const title = $('#rTitle')?.value || '';
-    const email = $('#rEmail')?.value || '';
-    const msg = $('#rMsg')?.value || '';
-    const body = encodeURIComponent(`Title: ${title}\nEmail: ${email}\n\n${msg}`);
-    // Prefer EmailJS if configured; else mailto
-    try {
-      if (window.emailjs && window.EMAILJS_CONFIG) {
-        emailjs.send(window.EMAILJS_CONFIG.service, window.EMAILJS_CONFIG.template, {
-          from_name: email || 'Guest', message: `REPORT: ${title}\n${msg}`, page: location.href
-        }).then(() => { if (note) note.textContent = 'Report sent. Thank you!'; });
-        return;
-      }
-    } catch (_) {}
-    window.location.href = 'mailto:report@aniclux.app?subject=' + encodeURIComponent('Broken link: ' + title) + '&body=' + body;
-    if (note) note.textContent = 'Opening email app…';
-  });
+  document.title = 'Report — AnimesFreak';
+  bindMailForm('#reportForm', '#reportNote', 'Report', (f) => ({
+    title: f('#rTitle'), name: f('#rEmail'), email: f('#rEmail'), message: f('#rMsg')
+  }), 'Report sent. Thank you — we will check the links soon!');
+}
+
+function setupRequestForm() {
+  document.title = 'Request Anime / Movie — AnimesFreak';
+  bindMailForm('#requestForm', '#requestNote', 'Request', (f) => ({
+    title: f('#qTitle'), name: f('#qEmail'), email: f('#qEmail'),
+    message: `Type: ${f('#qType')}\nLanguage: ${f('#qLang') || 'Any'}\n\n${f('#qMsg') || '(no extra notes)'}`
+  }), 'Request received! We will try to add it soon.');
+}
+
+function setupDmcaForm() {
+  document.title = 'DMCA — AnimesFreak';
+  bindMailForm('#dmcaForm', '#dmcaNote', 'DMCA', (f) => ({
+    title: f('#dTitle'), name: f('#dName'), email: f('#dEmail'),
+    message: `Rights holder: ${f('#dName')}\nWork: ${f('#dTitle')}\nURL(s):\n${f('#dUrls')}\n\nStatement:\n${f('#dMsg')}`
+  }), 'Notice received. We will review it and respond by email.');
+}
+
+function setupContactForm() {
+  document.title = 'Contact — AnimesFreak';
+  bindMailForm('#contactForm', '#contactNote', 'Contact', (f) => ({
+    title: f('#kSubject'), name: f('#kName'), email: f('#kEmail'), message: f('#kMsg')
+  }), 'Message sent. We will get back to you by email.');
 }
 
 function setupTheme() {
@@ -1653,11 +1585,11 @@ function setupTheme() {
     const isLight = document.body.classList.contains('light');
     btn.innerHTML = isLight ? sun : moon;
   };
-  if (localStorage.getItem('aniclux-theme') === 'light') document.body.classList.add('light');
+  if (localStorage.getItem('animesfreak-theme') === 'light') document.body.classList.add('light');
   apply();
   btn.onclick = () => {
     document.body.classList.toggle('light');
-    localStorage.setItem('aniclux-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+    localStorage.setItem('animesfreak-theme', document.body.classList.contains('light') ? 'light' : 'dark');
     apply();
   };
 }
@@ -1774,11 +1706,10 @@ function bindPulseHeart(animeId) {
   const btn = $('#pulseHeart');
   const countEl = $('#pulseCount');
   if (!btn || !countEl) return;
-  const key = 'aniclux-like-' + animeId;
-  const countKey = 'aniclux-like-count-' + animeId;
+  const key = 'animesfreak-like-' + animeId;
+  const countKey = 'animesfreak-like-count-' + animeId;
   let liked = localStorage.getItem(key) === '1';
   let count = parseInt(localStorage.getItem(countKey) || '0', 10);
-  if (!count) count = 800 + (String(animeId).length * 37) % 900;
   const paint = () => {
     btn.setAttribute('aria-pressed', liked ? 'true' : 'false');
     countEl.textContent = count.toLocaleString();
@@ -1791,6 +1722,8 @@ function bindPulseHeart(animeId) {
     localStorage.setItem(key, liked ? '1' : '0');
     localStorage.setItem(countKey, String(count));
     paint();
+    btn.classList.remove('pop'); void btn.offsetWidth; btn.classList.add('pop');
+    countEl.classList.remove('bump'); void countEl.offsetWidth; countEl.classList.add('bump');
   };
 }
 
@@ -1883,3 +1816,31 @@ function setupGhostFibers() {
 
 
 document.addEventListener('DOMContentLoaded', init);
+
+
+/* ---------- Player hardening ----------
+   Browsers can never make a plain <video> truly un-downloadable (that needs
+   licensed DRM), but this removes every easy path: native download button,
+   right-click "Save video as", drag-out, PiP/cast handoff, and leaving the
+   source URL lying around in the DOM or console. */
+function hardenPlayer() {
+  const video = $('#mainPlayer');
+  if (!video || video.dataset.hardened) return;
+  video.dataset.hardened = '1';
+  video.setAttribute('controlsList', 'nodownload noremoteplayback noplaybackrate');
+  video.setAttribute('disablePictureInPicture', '');
+  video.setAttribute('disableRemotePlayback', '');
+  video.setAttribute('draggable', 'false');
+  video.controls = false;
+  const wrap = video.closest('.player-wrap') || video;
+  const block = (e) => { e.preventDefault(); return false; };
+  ['contextmenu', 'dragstart', 'copy'].forEach(ev => wrap.addEventListener(ev, block));
+  // Moving watermark discourages screen-recording re-uploads
+  if (!wrap.querySelector('.af-watermark')) {
+    const wm = document.createElement('div');
+    wm.className = 'af-watermark';
+    wm.textContent = 'AnimesFreak';
+    wrap.appendChild(wm);
+  }
+}
+document.addEventListener('DOMContentLoaded', () => { try { hardenPlayer(); } catch (_) {} });
