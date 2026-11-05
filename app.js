@@ -1109,90 +1109,84 @@ function showControlsTemp() {
 }
 
 
+// ---------- Fullscreen ----------
+// Order: native element fullscreen (desktop/Android) -> iOS video fullscreen -> CSS "pseudo" fullscreen.
+// (The old code cancelled native fullscreen on phones and fell back to CSS that didn't exist.)
+function isFsActive() {
+  const w = document.querySelector('.player-wrap');
+  return !!(document.fullscreenElement || document.webkitFullscreenElement || (w && w.classList.contains('pseudo-fs')));
+}
+
+function setFsIcon() {
+  const fsBtn = document.getElementById('fsBtn');
+  if (fsBtn) fsBtn.innerHTML = isFsActive() ? '<span class="ico ico-close"></span>' : '<span class="ico ico-expand"></span>';
+}
+
 async function enterLandscapeFullscreen(wrap, video) {
-  // Toggle off if already in forced FS
-  if (wrap.classList.contains('force-landscape-fs')) {
-    exitForcedLandscape(wrap);
-    return;
-  }
+  if (!wrap) return;
+  // Exit paths
+  if (wrap.classList.contains('pseudo-fs')) { exitForcedLandscape(wrap); return; }
   if (document.fullscreenElement || document.webkitFullscreenElement) {
     try {
       if (document.exitFullscreen) await document.exitFullscreen();
       else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
     } catch (_) {}
     try { screen.orientation?.unlock?.(); } catch (_) {}
-    exitForcedLandscape(wrap);
     return;
   }
 
-  // 1) Try native fullscreen + orientation lock
-  let nativeOk = false;
-  try {
-    if (wrap.requestFullscreen) {
-      await wrap.requestFullscreen({ navigationUI: 'hide' }).catch(() => wrap.requestFullscreen());
-      nativeOk = true;
-    } else if (wrap.webkitRequestFullscreen) {
-      wrap.webkitRequestFullscreen();
-      nativeOk = true;
-    }
-  } catch (_) {}
+  // 1) Native fullscreen on the whole player (keeps our custom controls)
+  const req = wrap.requestFullscreen || wrap.webkitRequestFullscreen || wrap.msRequestFullscreen;
+  if (req) {
+    try {
+      await req.call(wrap, { navigationUI: 'hide' });
+      try { await screen.orientation?.lock?.('landscape'); } catch (_) {} // fine if unsupported
+      setFsIcon();
+      return;
+    } catch (_) { /* fall through */ }
+  }
 
-  try {
-    if (screen.orientation?.lock) {
-      await screen.orientation.lock('landscape');
-    }
-  } catch (_) {}
+  // 2) iPhone Safari: only <video> can go fullscreen
+  if (video && video.webkitEnterFullscreen) {
+    try { video.webkitEnterFullscreen(); return; } catch (_) {}
+  }
 
-  // 2) Always apply CSS forced landscape as reliable fallback
-  // (orientation.lock often blocked on Android)
-  setTimeout(() => {
-    const isPortrait = window.matchMedia('(orientation: portrait)').matches;
-    // If still portrait OR native FS failed → CSS rotate method
-    if (isPortrait || !document.fullscreenElement) {
-      // Exit native FS if it left us in portrait pillarbox
-      if (document.fullscreenElement) {
-        try { document.exitFullscreen(); } catch (_) {}
-      }
-      enterForcedLandscape(wrap);
-    }
-  }, 200);
+  // 3) Last resort: CSS fullscreen (rotates to landscape on portrait phones)
+  enterForcedLandscape(wrap);
 }
 
 function enterForcedLandscape(wrap) {
-  wrap.classList.add('force-landscape-fs');
+  wrap.classList.add('pseudo-fs');
   document.body.classList.add('fs-lock-scroll');
-  // Store original parent placement
-  if (!wrap.dataset.fsActive) wrap.dataset.fsActive = '1';
-
-  // Update FS button icon if present
-  const fsBtn = document.getElementById('fsBtn');
-  if (fsBtn) fsBtn.innerHTML = '<span class="ico ico-close"></span>';
-
-  // Back button / escape to exit
-  const onKey = (e) => {
-    if (e.key === 'Escape') exitForcedLandscape(wrap);
-  };
+  const onKey = (e) => { if (e.key === 'Escape') exitForcedLandscape(wrap); };
   document.addEventListener('keydown', onKey);
   wrap._fsKeyHandler = onKey;
-
-  // Tap X area: long-press or use fs button again
+  setFsIcon();
   showControlsTemp();
 }
 
 function exitForcedLandscape(wrap) {
   if (!wrap) wrap = document.querySelector('.player-wrap');
   if (!wrap) return;
-  wrap.classList.remove('force-landscape-fs');
+  wrap.classList.remove('pseudo-fs');
   document.body.classList.remove('fs-lock-scroll');
-  delete wrap.dataset.fsActive;
-  const fsBtn = document.getElementById('fsBtn');
-  if (fsBtn) fsBtn.innerHTML = '<span class="ico ico-expand"></span>';
   if (wrap._fsKeyHandler) {
     document.removeEventListener('keydown', wrap._fsKeyHandler);
     delete wrap._fsKeyHandler;
   }
   try { screen.orientation?.unlock?.(); } catch (_) {}
+  setFsIcon();
 }
+
+['fullscreenchange', 'webkitfullscreenchange'].forEach(ev =>
+  document.addEventListener(ev, () => {
+    setFsIcon();
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      try { screen.orientation?.unlock?.(); } catch (_) {}
+    }
+    showControlsTemp();
+  })
+);
 
 function setupCustomControls() {
   const video = $('#mainPlayer');
@@ -1211,12 +1205,6 @@ function setupCustomControls() {
     centerBtn.innerHTML = '<span class="ico ico-play ico-lg"></span>';
     wrap.appendChild(centerBtn);
   }
-
-  if (wrap.dataset.ccReady === '1') {
-    updatePlayBtn(!video.paused && !video.ended);
-    return;
-  }
-  wrap.dataset.ccReady = '1';
 
   function togglePlay() {
     if (video.paused || video.ended) {
