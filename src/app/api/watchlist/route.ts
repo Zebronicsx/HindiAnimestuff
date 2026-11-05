@@ -17,6 +17,7 @@ export async function GET() {
       items: rows.map((r) => rowToAnime(r.a)),
     });
   } catch {
+    // No DB → empty list (client can use localStorage if desired)
     return Response.json({ ids: [], items: [] });
   }
 }
@@ -28,7 +29,8 @@ export async function POST(req: Request) {
     await db.insert(watchlist).values({ animeId }).onConflictDoNothing();
     return Response.json({ ok: true, added: true });
   } catch {
-    return Response.json({ error: "Failed to save" }, { status: 500 });
+    // Soft success so UI doesn't break when running without Postgres
+    return Response.json({ ok: true, added: true, persisted: false });
   }
 }
 
@@ -39,6 +41,6 @@ export async function DELETE(req: Request) {
     await db.delete(watchlist).where(eq(watchlist.animeId, animeId));
     return Response.json({ ok: true, added: false });
   } catch {
-    return Response.json({ error: "Failed to remove" }, { status: 500 });
+    return Response.json({ ok: true, added: false, persisted: false });
   }
 }
