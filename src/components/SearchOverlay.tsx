@@ -1,123 +1,184 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Play, Search, Star } from "lucide-react";
-import { AnimeItem, poster, searchItems, ratingOf } from "../lib/catalog";
-import { href } from "../lib/router";
+/* eslint-disable @next/next/no-img-element */
+"use client";
 
-export default function SearchOverlay({
-  open,
-  onClose,
-  items,
-}: {
-  open: boolean;
-  onClose: () => void;
-  items: AnimeItem[];
-}) {
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
+import { Search, X, Star, Clock, Flame, Loader2, CornerDownLeft } from "lucide-react";
+import { useUI } from "./providers";
+import type { Anime } from "@/lib/types";
+
+const RECENT_KEY = "afs_recent";
+
+export default function SearchOverlay() {
+  const { searchOpen, setSearchOpen } = useUI();
+  const router = useRouter();
   const [q, setQ] = useState("");
-  const input = useRef<HTMLInputElement>(null);
+  const [results, setResults] = useState<Anime[]>([]);
+  const [trending, setTrending] = useState<Anime[]>([]);
+  const [recent, setRecent] = useState<Anime[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [active, setActive] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  // global shortcut
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen(!searchOpen);
+      }
+      if (e.key === "Escape") setSearchOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [searchOpen, setSearchOpen]);
 
   useEffect(() => {
-    if (open) {
+    if (searchOpen) {
       setQ("");
-      setTimeout(() => input.current?.focus(), 80);
+      setResults([]);
+      setActive(0);
+      try {
+        setRecent(JSON.parse(localStorage.getItem(RECENT_KEY) ?? "[]"));
+      } catch { setRecent([]); }
+      if (trending.length === 0) {
+        fetch("/api/anime?filter=trending&limit=6")
+          .then((r) => r.json())
+          .then((d) => setTrending(d.items ?? []))
+          .catch(() => {});
+      }
+      document.body.style.overflow = "hidden";
+      setTimeout(() => inputRef.current?.focus(), 60);
+    } else {
+      document.body.style.overflow = "";
     }
-  }, [open]);
+    return () => { document.body.style.overflow = ""; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchOpen]);
 
   useEffect(() => {
-    const fn = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", fn);
-    return () => window.removeEventListener("keydown", fn);
-  }, [onClose]);
+    if (!q.trim()) { setResults([]); setLoading(false); return; }
+    setLoading(true);
+    const t = setTimeout(() => {
+      abortRef.current?.abort();
+      const ctrl = new AbortController();
+      abortRef.current = ctrl;
+      fetch(`/api/anime?q=${encodeURIComponent(q.trim())}&limit=8`, { signal: ctrl.signal })
+        .then((r) => r.json())
+        .then((d) => { setResults(d.items ?? []); setActive(0); })
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    }, 220);
+    return () => clearTimeout(t);
+  }, [q]);
 
-  const results = useMemo(() => searchItems(items, q), [items, q]);
-  const suggestions = useMemo(
-    () => [...items].sort((a, b) => ratingOf(b) - ratingOf(a)).slice(0, 12),
-    [items]
+  const go = useCallback(
+    (a: Anime) => {
+      try {
+        const next = [a, ...recent.filter((r) => r.id !== a.id)].slice(0, 5);
+        localStorage.setItem(RECENT_KEY, JSON.stringify(next));
+      } catch {}
+      setSearchOpen(false);
+      router.push(`/anime/${a.id}`);
+    },
+    [recent, router, setSearchOpen]
   );
-  const shown = q.trim() ? results : suggestions;
+
+  const list = q.trim() ? results : recent.length ? recent : trending;
+
+  const onInputKey = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); setActive((i) => Math.min(i + 1, list.length - 1)); }
+    if (e.key === "ArrowUp") { e.preventDefault(); setActive((i) => Math.max(i - 1, 0)); }
+    if (e.key === "Enter" && list[active]) { e.preventDefault(); go(list[active]); }
+  };
 
   return (
     <AnimatePresence>
-      {open && (
+      {searchOpen && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[150]"
+          className="fixed inset-0 z-[85] bg-black/70 backdrop-blur-sm"
+          onClick={() => setSearchOpen(false)}
         >
-          <div className="absolute inset-0 bg-ink/92 backdrop-blur-xl blueprint-oni" onClick={onClose} />
-          <div className="pointer-events-none absolute inset-0 grid place-items-center">
-            <span className="text-stroke font-display text-[20vw] uppercase leading-none opacity-20 select-none">
-              検索
-            </span>
-          </div>
           <motion.div
-            initial={{ y: 40, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 20, opacity: 0 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="relative mx-auto max-w-4xl px-5 pt-[10vh] md:pt-[14vh]"
+            initial={{ opacity: 0, y: -18, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -12, scale: 0.97 }}
+            transition={{ type: "spring", stiffness: 380, damping: 32 }}
+            onClick={(e) => e.stopPropagation()}
+            className="mx-auto mt-[10vh] w-[min(94vw,620px)] overflow-hidden rounded-3xl border border-line bg-surface shadow-card"
           >
-            <div className="border border-line bg-coal shadow-[0_40px_120px_-30px_rgba(255,42,42,0.4)]">
-              <div className="flex items-center gap-4 border-b border-line px-6 md:px-8">
-                <Search className="h-5 w-5 shrink-0 text-oni" />
-                <input
-                  ref={input}
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="Search anime, movies and series…"
-                  className="w-full bg-transparent py-6 font-display text-lg uppercase tracking-wide placeholder:normal-case placeholder:text-ash/50 placeholder:font-body md:text-xl outline-none"
-                />
-                <button
-                  onClick={onClose}
-                  data-hover
-                  className="shrink-0 border border-line px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.24em] text-ash transition-colors hover:border-oni hover:text-oni"
-                >
-                  Esc
-                </button>
-              </div>
-
-              <div className="max-h-[58vh] overflow-y-auto p-4 md:p-5">
-                <p className="flex items-center gap-3 px-1.5 pb-3 font-mono text-[10px] uppercase tracking-[0.3em] text-ash">
-                  <Play className="h-3 w-3 fill-oni text-oni" />
-                  {q.trim() ? `${results.length} signals found` : "Top rated in the vault"}
-                  <span className="h-px flex-1 bg-line" />
-                </p>
-                {shown.length === 0 && (
-                  <p className="py-12 text-center text-sm text-ash">
-                    信号なし — no results. Try a different spelling or a shorter query.
-                  </p>
-                )}
-                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
-                  {shown.map((it) => (
-                    <a
-                      key={it.id}
-                      href={href(`/title/${it.id}`)}
-                      data-hover
-                      className="group relative aspect-[2/3] overflow-hidden border border-line bg-panel transition-colors hover:border-oni/60"
-                    >
-                      <img
-                        src={poster(it, "w342")}
-                        alt={it.title}
-                        loading="lazy"
-                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-transparent" />
-                      <span className="absolute right-1.5 top-1.5 flex items-center gap-1 bg-ink/70 px-1.5 py-1 text-[10px] font-bold text-gold backdrop-blur-sm">
-                        <Star className="h-2.5 w-2.5 fill-current" />
-                        {it.rating}
-                      </span>
-                      <p className="absolute inset-x-0 bottom-0 p-2 font-display text-[12px] uppercase leading-tight text-paper line-clamp-2">
-                        {it.title}
-                      </p>
-                    </a>
-                  ))}
-                </div>
-              </div>
+            <div className="flex items-center gap-3 border-b border-line px-5 py-4">
+              {loading ? (
+                <Loader2 className="size-5 shrink-0 animate-spin text-primary-soft" />
+              ) : (
+                <Search className="size-5 shrink-0 text-primary-soft" />
+              )}
+              <input
+                ref={inputRef}
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                onKeyDown={onInputKey}
+                placeholder="Anime dhoondo… (Solo Leveling, Jujutsu, One Piece)"
+                className="w-full bg-transparent text-[15px] font-medium text-fg outline-none placeholder:text-dim"
+              />
+              <button
+                onClick={() => setSearchOpen(false)}
+                className="focus-ring grid size-8 shrink-0 place-items-center rounded-lg border border-line text-dim transition hover:text-fg"
+                aria-label="Close search"
+              >
+                <X className="size-4" />
+              </button>
             </div>
-            <p className="mt-5 text-center font-mono text-[10px] uppercase tracking-[0.35em] text-ash">
-              {items.length} titles indexed · Esc to close
-            </p>
+
+            <div className="max-h-[52vh] overflow-y-auto p-2.5">
+              {!q.trim() && (
+                <p className="flex items-center gap-1.5 px-3 pb-1.5 pt-2 text-[10.5px] font-bold uppercase tracking-[0.18em] text-dim">
+                  {recent.length ? <><Clock className="size-3" /> Recent searches</> : <><Flame className="size-3 text-primary-soft" /> Trending abhi</>}
+                </p>
+              )}
+              {q.trim() && !loading && results.length === 0 && (
+                <div className="px-4 py-10 text-center">
+                  <p className="text-sm font-semibold text-mute">"{q}" ke liye kuch nahi mila 😔</p>
+                  <p className="mt-1 text-xs text-dim">Spelling check karo ya Telegram par request bhejo.</p>
+                </div>
+              )}
+              {list.map((a, i) => (
+                <button
+                  key={a.id}
+                  onClick={() => go(a)}
+                  onMouseEnter={() => setActive(i)}
+                  className={`flex w-full items-center gap-3.5 rounded-2xl px-3 py-2.5 text-left transition ${
+                    i === active ? "bg-white/[0.07]" : ""
+                  }`}
+                >
+                  <img src={a.poster} alt="" className="h-14 w-10 shrink-0 rounded-lg object-cover" loading="lazy" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[13.5px] font-bold text-fg">{a.title}</span>
+                    <span className="mt-0.5 flex items-center gap-2 text-[11px] font-medium text-dim">
+                      <span className="flex items-center gap-0.5 text-gold">
+                        <Star className="size-3 fill-gold" /> {a.score.toFixed(1)}
+                      </span>
+                      <span>{a.year}</span>
+                      <span className="rounded bg-white/5 px-1.5 py-px uppercase">{a.type}</span>
+                      <span className="hidden text-primary-soft sm:inline">Hindi Dub</span>
+                    </span>
+                  </span>
+                  {i === active && <CornerDownLeft className="size-4 shrink-0 text-dim" />}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-4 border-t border-line bg-ink/50 px-5 py-2.5 text-[10.5px] font-semibold text-dim">
+              <span><kbd className="rounded border border-line px-1">↑↓</kbd> navigate</span>
+              <span><kbd className="rounded border border-line px-1">↵</kbd> open</span>
+              <span><kbd className="rounded border border-line px-1">esc</kbd> close</span>
+              <span className="ml-auto hidden text-primary-soft/70 sm:inline">35 titles • Hindi audio</span>
+            </div>
           </motion.div>
         </motion.div>
       )}

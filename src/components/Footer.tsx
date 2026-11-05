@@ -1,117 +1,99 @@
-import { motion } from "framer-motion";
-import { ArrowUpRight, Gamepad2, MessageCircle, Rss, Tv } from "lucide-react";
-import Logo from "./Logo";
-import { href } from "../lib/router";
+import Link from "next/link";
+import { Play, Send, Code2, Heart } from "lucide-react";
+import { TELEGRAM_URL } from "@/lib/types";
 
 const COLS = [
   {
-    title: "The Vault",
+    h: "Explore",
     links: [
-      ["Anime · Hindi Dub", "/anime"],
-      ["Movies", "/movies"],
-      ["Web Series", "/series"],
-      ["My List", "/mylist"],
+      { l: "Home", href: "/" },
+      { l: "Trending", href: "/trending" },
+      { l: "Discover", href: "/browse" },
+      { l: "Movies", href: "/movies" },
     ],
   },
   {
-    title: "Formats",
+    h: "Library",
     links: [
-      ["1080p FHD · x265", "/anime"],
-      ["720p HD · x264", "/movies"],
-      ["480p · WEB-DL", "/series"],
-      ["Multi Audio + ESub", "/anime"],
+      { l: "My List", href: "/my-list" },
+      { l: "History", href: "/history" },
+      { l: "New Dub", href: "/browse?sort=newest" },
+      { l: "Top Rated", href: "/browse?sort=rating" },
     ],
   },
-  {
-    title: "Signal",
-    links: [
-      ["Watch Online", "/anime"],
-      ["Direct Download", "/movies"],
-      ["Romance & Fantasy", "/series"],
-      ["Action Overdose", "/anime"],
-    ],
-  },
-];
-
-const SOCIAL = [
-  { icon: Tv, label: "Freak TV" },
-  { icon: MessageCircle, label: "Community" },
-  { icon: Gamepad2, label: "Arcade" },
-  { icon: Rss, label: "Signal Feed" },
 ];
 
 export default function Footer() {
   return (
-    <footer className="relative overflow-hidden border-t border-line bg-coal">
-      <div className="mx-auto max-w-7xl px-5 pb-10 pt-20 md:px-8">
-        <div className="grid gap-14 lg:grid-cols-[1.2fr_2fr]">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-          >
-            <Logo showTag />
-            <p className="mt-6 max-w-xs text-sm leading-relaxed text-paper/55">
-              The anime OTT network for the obsessed — Hindi dub and multi audio. Watch online or download directly,{" "}
-              <span className="text-oni">the chaos stream</span> is always live.
-            </p>
-            <div className="mt-7 flex gap-3">
-              {SOCIAL.map((s) => (
-                <a
-                  key={s.label}
-                  href={href("/")}
-                  aria-label={s.label}
-                  data-hover
-                  className="grid h-10 w-10 place-items-center rounded-lg border border-line text-ash transition-all duration-300 hover:-translate-y-1 hover:border-oni hover:text-oni"
-                >
-                  <s.icon className="h-4 w-4" />
-                </a>
-              ))}
-            </div>
-          </motion.div>
-
-          <div className="grid grid-cols-2 gap-10 sm:grid-cols-3">
-            {COLS.map((col, i) => (
-              <motion.div
-                key={col.title}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: i * 0.08 }}
-              >
-                <h4 className="text-[10px] font-bold uppercase tracking-[0.35em] text-oni">{col.title}</h4>
-                <ul className="mt-5 space-y-3.5">
-                  {col.links.map(([label, to]) => (
-                    <li key={label}>
-                      <a
-                        href={href(to)}
-                        data-hover
-                        className="group inline-flex items-center gap-1.5 text-sm text-paper/60 transition-colors hover:text-paper"
-                      >
-                        {label}
-                        <ArrowUpRight className="h-3 w-3 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100 group-hover:text-oni" />
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-
-        <div className="pointer-events-none mt-16 select-none overflow-hidden border-t border-line pt-10">
-          <p className="glitch whitespace-nowrap text-center font-display text-[12vw] uppercase leading-[0.85] text-stroke" data-text="ANIMESFREAK">
-            ANIMESFREAK
+    <footer className="relative mt-16 overflow-hidden border-t border-line/70 bg-surface/40">
+      <div className="pointer-events-none absolute -top-24 left-1/3 h-48 w-96 rounded-full bg-primary/10 blur-[100px]" />
+      <div className="relative grid gap-10 px-5 py-12 md:grid-cols-[1.4fr_1fr_1fr_1.2fr] md:px-10">
+        <div>
+          <Link href="/" className="flex items-center gap-2.5">
+            <span className="btn-primary grid size-9 place-items-center rounded-xl">
+              <Play className="size-4 fill-white text-white" />
+            </span>
+            <span className="font-display text-lg font-bold">
+              Animes<span className="brand-grad">Freak</span>
+            </span>
+          </Link>
+          <p className="font-hindi mt-3 text-[15px] font-semibold text-mute">
+            स्ट्रीम करो, वो भी अपने अंदाज़ में। 🍿
+          </p>
+          <p className="mt-2 max-w-xs text-xs leading-relaxed text-dim">
+            Hindi-dubbed anime ka ghar — trending series, movies aur daily episode updates, ek hi jagah.
           </p>
         </div>
-
-        <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6 text-[10px] font-semibold uppercase tracking-[0.28em] text-ash">
-          <span>© {new Date().getFullYear()} AnimesFreak Network</span>
-          <span className="font-jp tracking-[0.4em] text-oni">狂気をストリーミングせよ</span>
-          <span>ONI-01 / All signals live</span>
+        {COLS.map((c) => (
+          <div key={c.h}>
+            <h4 className="mb-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-dim">{c.h}</h4>
+            <ul className="space-y-2">
+              {c.links.map((x) => (
+                <li key={x.l}>
+                  <Link href={x.href} className="text-[13px] font-semibold text-mute transition hover:text-primary-soft">
+                    {x.l}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+        <div>
+          <h4 className="mb-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-dim">Community</h4>
+          <a
+            href={TELEGRAM_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="focus-ring flex w-fit items-center gap-2 rounded-full bg-cyanic/12 px-4 py-2 text-[12.5px] font-bold text-cyanic transition hover:bg-cyanic/25"
+          >
+            <Send className="size-3.5" /> @HindiAnimestuff
+          </a>
+          <a
+            href="https://github.com/Zebronicsx/HindiAnimestuff"
+            target="_blank"
+            rel="noreferrer"
+            className="mt-2.5 flex w-fit items-center gap-2 rounded-full bg-white/5 px-4 py-2 text-[12.5px] font-bold text-mute transition hover:text-fg"
+          >
+            <Code2 className="size-3.5" /> Source project
+          </a>
+          <p className="mt-4 text-[10.5px] leading-relaxed text-dim">
+            Fan-made refresh inspired by Sora UI. Demo playback public sample videos use karta hai.
+            Metadata &amp; art: AniList.
+          </p>
         </div>
       </div>
+      <div className="relative flex flex-col items-center justify-between gap-2 border-t border-line/60 px-5 py-5 text-[11px] font-semibold text-dim md:flex-row md:px-10">
+        <span>© 2026 AnimesFreak • HindiAnimestuff</span>
+        <span className="flex items-center gap-1.5">
+          Made with <Heart className="size-3 fill-primary text-primary" /> for desi anime fans
+        </span>
+      </div>
+      <p
+        aria-hidden
+        className="font-display pointer-events-none select-none whitespace-nowrap text-center text-[13vw] font-bold leading-[0.75] tracking-tight text-white/[0.025]"
+      >
+        ANIMESFREAK
+      </p>
     </footer>
   );
 }

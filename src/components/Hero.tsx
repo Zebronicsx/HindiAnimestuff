@@ -1,145 +1,223 @@
-import { useMemo, useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { Play, ChevronDown, Tv } from "lucide-react";
-import { emblemImg as emblem, heroBgImg as heroBg } from "../assets/images";
-import { AnimeItem } from "../lib/catalog";
-import { href } from "../lib/router";
-import { SplitLetters } from "./fx";
+/* eslint-disable @next/next/no-img-element */
+"use client";
 
-export default function Hero({ items, onRandom }: { items: AnimeItem[]; onRandom: () => void }) {
-  const ref = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "16%"]);
-  const bgScale = useTransform(scrollYProgress, [0, 1], [1.05, 1.25]);
-  const fade = useTransform(scrollYProgress, [0, 0.75], [1, 0]);
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Play, Plus, Check, Star, Info, ChevronLeft, ChevronRight, Sparkles, Mic2 } from "lucide-react";
+import { useLibrary } from "./providers";
+import type { Anime } from "@/lib/types";
 
-  const stats = useMemo(() => {
-    const anime = items.filter((i) => i.category === "anime").length;
-    const movies = items.filter((i) => i.category === "movies").length;
-    const series = items.filter((i) => i.category === "series").length;
-    return [
-      [`${items.length}+`, "Titles in vault"],
-      [`${anime}`, "Anime · Hindi dub"],
-      [`${movies}`, "Movies"],
-      [`${series}`, "Web series"],
-    ];
-  }, [items]);
+const DUR = 8;
+
+export default function Hero({ items }: { items: Anime[] }) {
+  const [idx, setIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [pct, setPct] = useState(0);
+  const { inList, toggle } = useLibrary();
+
+  const next = useCallback(() => setIdx((i) => (i + 1) % items.length), [items.length]);
+  const prev = () => setIdx((i) => (i - 1 + items.length) % items.length);
+
+  useEffect(() => setPct(0), [idx]);
+  useEffect(() => {
+    if (paused || items.length < 2) return;
+    const t = setInterval(() => setPct((p) => Math.min(100, p + 10 / DUR)), 100);
+    return () => clearInterval(t);
+  }, [paused, items.length]);
+  useEffect(() => {
+    if (pct >= 100) next();
+  }, [pct, next]);
+
+  if (items.length === 0) return null;
+  const a = items[idx];
+  const saved = inList(a.id);
 
   return (
-    <section ref={ref} className="relative flex min-h-screen flex-col overflow-hidden">
-      <motion.div style={{ y: bgY, scale: bgScale }} className="absolute inset-0">
-        <img src={heroBg} alt="" className="h-full w-full object-cover object-center" />
-      </motion.div>
-      <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/55 to-ink" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(6,6,11,0.55)_72%)]" />
-
-      {/* hairlines + side notes */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6, duration: 1 }} className="pointer-events-none absolute inset-y-0 left-5 hidden w-px bg-paper/10 md:block" />
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6, duration: 1 }} className="pointer-events-none absolute inset-y-0 right-5 hidden w-px bg-paper/10 md:block" />
-      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, duration: 1 }} className="jp-v pointer-events-none absolute left-9 top-1/2 hidden -translate-y-1/2 font-jp text-xs font-bold tracking-[0.6em] text-oni md:block">
-        アニメフリーク — 狂気を解放せよ
-      </motion.p>
-      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, duration: 1 }} className="pointer-events-none absolute right-9 top-1/2 hidden -translate-y-1/2 rotate-90 text-[10px] font-semibold uppercase tracking-[0.6em] text-ash md:block">
-        ONI-01 / Signal Live
-      </motion.p>
-
-      <motion.div style={{ opacity: fade }} className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 pb-24 pt-40 text-center">
-        {/* emblem lockup */}
+    <section
+      className="relative flex min-h-[600px] flex-col justify-end overflow-hidden md:min-h-[640px]"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {/* backdrop */}
+      <AnimatePresence mode="sync">
         <motion.div
-          initial={{ scale: 0.4, opacity: 0, y: 30 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          transition={{ delay: 0.25, duration: 1, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mb-10"
+          key={a.id}
+          initial={{ opacity: 0, scale: 1.05 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.9, ease: "easeOut" }}
+          className="absolute inset-0"
         >
-          <div className="absolute -inset-10 animate-pulse-glow rounded-full bg-oni/25 blur-3xl" />
-          <svg viewBox="0 0 200 200" className="absolute -inset-9 h-[calc(100%+72px)] w-[calc(100%+72px)] animate-spin-slow">
-            <circle cx="100" cy="100" r="96" fill="none" stroke="rgba(255,42,42,0.35)" strokeWidth="1" strokeDasharray="4 14" />
-            <circle cx="100" cy="4" r="2.5" fill="#ff2a2a" />
-          </svg>
-          <div className="relative animate-float">
-            <div className="relative h-36 w-36 -skew-x-6 overflow-hidden rounded-[28px] border border-oni/40 shadow-[0_30px_80px_-16px_rgba(255,42,42,0.65)] md:h-44 md:w-44">
-              <img src={emblem} alt="AnimesFreak oni crest" className="h-full w-full object-cover" draggable={false} />
-            </div>
-            <div className="absolute -bottom-2.5 -right-2.5 grid h-9 w-9 place-items-center rounded-xl bg-oni text-white shadow-[0_6px_20px_rgba(255,42,42,0.7)]">
-              <Play className="h-3.5 w-3.5 fill-current" />
-            </div>
-          </div>
+          <img
+            src={a.banner ?? a.poster}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover object-center"
+          />
+          <img
+            src={a.banner ?? a.poster}
+            alt=""
+            aria-hidden
+            className="absolute inset-0 h-full w-full scale-125 object-cover opacity-40 blur-3xl"
+          />
         </motion.div>
+      </AnimatePresence>
+      <div className="hero-scrim absolute inset-0" />
+      {/* accent glow from cover color */}
+      <div
+        className="pointer-events-none absolute -left-32 top-1/3 size-[420px] rounded-full opacity-25 blur-[130px]"
+        style={{ background: a.color ?? "#f31260" }}
+      />
 
-        {/* network badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.45, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-6 flex items-center gap-3 border border-paper/15 bg-ink/40 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.42em] text-ash backdrop-blur-md"
-        >
-          <Tv className="h-3.5 w-3.5 text-oni" />
-          Anime OTT Network — Hindi Dub Vault
-        </motion.div>
+      {/* top-right controls */}
+      <div className="absolute right-5 top-20 z-20 hidden items-center gap-2 md:flex lg:right-10 lg:top-8">
+        <span className="font-display mr-1 text-xs font-bold tracking-[0.2em] text-white/50">
+          {String(idx + 1).padStart(2, "0")} / {String(items.length).padStart(2, "0")}
+        </span>
+        <button onClick={prev} aria-label="Previous" className="focus-ring glass grid size-9 place-items-center rounded-full text-white/80 transition hover:border-primary/60 hover:text-white">
+          <ChevronLeft className="size-4.5" />
+        </button>
+        <button onClick={next} aria-label="Next" className="focus-ring glass grid size-9 place-items-center rounded-full text-white/80 transition hover:border-primary/60 hover:text-white">
+          <ChevronRight className="size-4.5" />
+        </button>
+      </div>
 
-        {/* giant title */}
-        <h1 className="select-none font-display uppercase leading-[0.86] tracking-tight">
-          <span className="block overflow-hidden text-[17vw] text-paper md:text-[9.5rem]">
-            <SplitLetters text="ANIMES" delay={0.55} />
-          </span>
-          <span
-            className="glitch block -skew-x-6 overflow-hidden text-[17vw] text-oni [text-shadow:0_0_50px_rgba(255,42,42,0.45)] md:text-[9.5rem]"
-            data-text="FREAK"
+      <div className="relative z-10 flex items-end gap-10 px-5 pb-4 pt-32 md:px-10 md:pt-24">
+        {/* info */}
+        <div className="min-w-0 max-w-2xl flex-1">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={a.id}
+              initial={{ opacity: 0, y: 26 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -14 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <div className="mb-3.5 flex flex-wrap items-center gap-2">
+                <span className="flex items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-[10.5px] font-extrabold uppercase tracking-widest text-white shadow-glow">
+                  <Sparkles className="size-3" /> Spotlight #{idx + 1}
+                </span>
+                <span className="flex items-center gap-1.5 rounded-full border border-cyanic/40 bg-cyanic/10 px-3 py-1 text-[10.5px] font-extrabold uppercase tracking-widest text-cyanic">
+                  <Mic2 className="size-3" /> Hindi Dub
+                </span>
+              </div>
+
+              <h1 className="font-display text-4xl font-bold leading-[1.04] tracking-tight text-white drop-shadow-lg sm:text-5xl xl:text-[64px]">
+                {a.title}
+              </h1>
+              <p className="mt-2 truncate text-[11px] font-semibold uppercase tracking-[0.25em] text-white/40">
+                {a.romaji}
+              </p>
+
+              <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-[12.5px] font-semibold text-white/80">
+                <span className="flex items-center gap-1 rounded-md bg-gold/15 px-2 py-0.5 font-bold text-gold">
+                  <Star className="size-3.5 fill-gold" /> {a.score.toFixed(1)}
+                </span>
+                <span>{a.year}</span>
+                <span className="size-1 rounded-full bg-white/30" />
+                <span>{a.type === "movie" ? "Movie" : `${a.episodesCount} Episodes`}</span>
+                <span className="size-1 rounded-full bg-white/30" />
+                <span className="rounded border border-white/25 px-1.5 py-px text-[10px] font-bold text-white/70">
+                  {a.qualities[a.qualities.length - 1]}
+                </span>
+                <span className="hidden items-center gap-1.5 sm:flex">
+                  {a.genres.slice(0, 3).map((g) => (
+                    <span key={g} className="rounded-full bg-white/10 px-2.5 py-0.5 text-[10.5px] font-semibold text-white/75 backdrop-blur-sm">
+                      {g}
+                    </span>
+                  ))}
+                </span>
+              </div>
+
+              <p className="mt-4 line-clamp-3 max-w-xl text-[13.5px] leading-relaxed text-white/65">
+                {a.synopsis}
+              </p>
+
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                <Link
+                  href={`/watch/${a.id}/1`}
+                  className="btn-primary focus-ring flex items-center gap-2 rounded-full px-7 py-3 text-sm font-extrabold text-white"
+                >
+                  <Play className="size-4 fill-white" /> Abhi Dekho
+                </Link>
+                <button
+                  onClick={() => toggle(a.id, a.title)}
+                  className={`focus-ring glass flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold transition ${
+                    saved ? "border-mint/50 text-mint" : "text-white hover:border-white/40"
+                  }`}
+                >
+                  {saved ? <Check className="size-4" /> : <Plus className="size-4" />}
+                  {saved ? "Listed" : "My List"}
+                </button>
+                <Link
+                  href={`/anime/${a.id}`}
+                  className="focus-ring flex items-center gap-1.5 rounded-full px-4 py-3 text-sm font-bold text-white/60 transition hover:text-white"
+                >
+                  <Info className="size-4" /> Details
+                </Link>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* floating poster */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={a.id}
+            initial={{ opacity: 0, x: 40, rotate: 5 }}
+            animate={{ opacity: 1, x: 0, rotate: 2 }}
+            exit={{ opacity: 0, x: -20, rotate: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="relative hidden shrink-0 xl:block"
           >
-            <SplitLetters text="FREAK" delay={0.8} />
-          </span>
-        </h1>
+            <div
+              className="absolute -inset-6 rounded-[32px] opacity-40 blur-3xl"
+              style={{ background: a.color ?? "#f31260" }}
+            />
+            <Link href={`/anime/${a.id}`} className="focus-ring animate-float relative block">
+              <img
+                src={a.poster}
+                alt={a.title}
+                className="w-[230px] rounded-2xl border border-white/20 object-cover shadow-card"
+              />
+            </Link>
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.15, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-7 max-w-xl text-balance text-sm leading-relaxed text-paper/70 md:text-base"
-        >
-          Anime, movies and web series — <span className="text-spark">watch online</span> or{" "}
-          <span className="text-oni">download directly</span>. Hindi dub, multi audio, from 480p to 1080p FHD.{" "}
-          <span className="text-oni">Stream the madness.</span>
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.3, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-10 flex flex-wrap items-center justify-center gap-4"
-        >
-          <a
-            href={href("/anime")}
-            data-hover
-            className="slash-sweep group flex items-center gap-3 bg-oni px-8 py-4 text-xs font-bold uppercase tracking-[0.3em] text-white transition-colors hover:bg-oni-deep cut-corner"
-          >
-            <Play className="h-4 w-4 fill-current transition-transform group-hover:scale-125" />
-            Start Watching
-          </a>
-          <button
-            onClick={onRandom}
-            data-hover
-            className="flex items-center gap-3 border border-paper/25 bg-ink/30 px-8 py-4 text-xs font-bold uppercase tracking-[0.3em] text-paper backdrop-blur-md transition-all hover:border-oni hover:text-oni"
-          >
-            Random Freak Pick
-            <ChevronDown className="h-4 w-4" />
-          </button>
-        </motion.div>
-      </motion.div>
-
-      {/* stat strip */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.6, duration: 1 }}
-        className="relative z-10 mx-auto hidden w-full max-w-7xl grid-cols-4 gap-6 border-t border-paper/10 px-8 py-6 md:grid"
-      >
-        {stats.map(([v, l]) => (
-          <div key={l} className="flex items-baseline gap-3">
-            <span className="font-display text-2xl text-paper">{v}</span>
-            <span className="text-[10px] uppercase tracking-[0.28em] text-ash">{l}</span>
-          </div>
-        ))}
-      </motion.div>
+      {/* thumbnail selector — Sora style */}
+      <div className="relative z-10 mt-6 px-5 pb-6 md:px-10">
+        <div className="no-scrollbar flex gap-3 overflow-x-auto pb-1">
+          {items.map((t, i) => (
+            <button
+              key={t.id}
+              onClick={() => setIdx(i)}
+              aria-label={`Show ${t.title}`}
+              className={`focus-ring relative aspect-video w-[130px] shrink-0 overflow-hidden rounded-xl border-2 transition-all duration-300 sm:w-[150px] ${
+                i === idx
+                  ? "border-primary shadow-glow"
+                  : "border-transparent opacity-50 hover:opacity-90"
+              }`}
+            >
+              <img src={t.banner ?? t.poster} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent" />
+              {i === idx && (
+                <>
+                  <span className="absolute inset-x-2 bottom-1.5 truncate text-left text-[10px] font-bold text-white">
+                    {t.title}
+                  </span>
+                  <span className="absolute inset-x-0 top-0 h-[3px] bg-white/15">
+                    <span
+                      className="block h-full bg-primary"
+                      style={{ width: `${pct}%`, transition: "width 0.12s linear" }}
+                    />
+                  </span>
+                </>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
     </section>
   );
 }

@@ -1,367 +1,250 @@
-/* ------------------------------------------------------------------ */
-/*  AnimesFreak — data layer                                          */
-/* ------------------------------------------------------------------ */
+import raw from "../db/catalog.json";
+import type { Anime, Episode } from "./types";
 
-export type Quality = "480p" | "720p" | "1080p";
-export const QUALITY_ORDER: Quality[] = ["1080p", "720p", "480p"];
-
-export interface AnimeItem {
-  id: string;
-  category: "anime" | "movies" | "series" | string;
-  season: string;
+interface RawEntry {
+  id: number;
   title: string;
+  romaji: string;
   poster: string;
-  rating: string;
+  color: string | null;
+  banner: string | null;
+  score: number;
+  year: number;
+  type: string;
+  episodes: number;
   genres: string[];
-  quality_tag: string;
-  episode_tag: string;
-  languages: string[];
-  runtime: string;
-  subtitle: string;
-  episodes: string;
-  type: "Movie" | "TV Series" | "OVA" | string;
-  trending?: boolean;
-  description: string;
-  downloads: Partial<Record<Quality, string>>;
-  episode_links: Record<string, Partial<Record<Quality, string>>>;
+  studio: string;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Embedded catalog                                                  */
-/*  The whole dataset ships inside the build (tokenised by scripts).  */
-/*  No runtime fetch → works on localhost, Cloudflare, Vercel,        */
-/*  Firebase and even when index.html is opened straight from disk.    */
-/* ------------------------------------------------------------------ */
-
-import catalogRaw from "../data/catalog.json?raw";
-import { emblemImg } from "../assets/images";
-
-const WORKER = "https://icy-feather-221c.jakcminasi.workers.dev/?id=";
-const TMDB = "https://image.tmdb.org/t/p/original/";
-
-const CATEGORIES = ["anime", "movies", "series"] as const;
-const TYPES = ["TV Series", "Movie", "OVA"] as const;
-const QK: Quality[] = ["480p", "720p", "1080p"];
-
-/** Original host naming: [Visit On Telegram @HindiAnimestuff] <file> */
-export const FILE_TAG = "[Visit On Telegram @HindiAnimestuff] ";
-
-/** W<id>|<name>  → worker url · T<path> → tmdb url · anything else = raw */
-function decodeUrl(value: string | null | undefined): string | undefined {
-  if (!value) return undefined;
-  if (value[0] === "W") {
-    const rest = value.slice(1);
-    const bar = rest.indexOf("|");
-    if (bar === -1) return WORKER + rest;
-    const id = rest.slice(0, bar);
-    const name = rest.slice(bar + 1);
-    // rebuild the exact original filename, tag included
-    return `${WORKER}${id}&name=${encodeURIComponent(FILE_TAG + name)}`;
-  }
-  if (value[0] === "T") return TMDB + value.slice(1);
-  return value;
+export function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
-type RawRow = [
-  string, number, string, string, string | null, string, string, string, string, string,
-  string, string, string, number, number, string,
-  Record<string, string | null> | null,
-  (string | null)[][] | null
+const TITLE_FIX: Record<number, string> = {
+  21: "One Piece",
+  113415: "Jujutsu Kaisen",
+  145064: "Jujutsu Kaisen Season 2",
+  140960: "Spy x Family",
+  11061: "Hunter x Hunter",
+  20464: "Haikyu!!",
+  21234: "Erased",
+  105333: "Dr. Stone",
+  151801: "Mashle: Magic and Muscles",
+  153288: "Kaiju No. 8",
+  128893: "Hell's Paradise: Jigokuraku",
+  21519: "Your Name.",
+  112151: "Demon Slayer: Mugen Train",
+  131573: "Jujutsu Kaisen 0",
+};
+
+const EP_OVERRIDE: Record<number, number> = { 21: 1122, 1735: 500 };
+
+const SYNOPSIS: Record<number, string> = {
+  151807:
+    "Duniya ka sabse kamzor hunter Sung Jinwoo ek double dungeon mein maut ke muh se laut-ta hai — aur usse milta hai ek mysterious System. Ab har level up ke saath woh Shadow Monarch ban-ne ki raah par hai. Hindi dub mein poora action, poora swagger.",
+  145064:
+    "Gojo aur Geto ki jawani ke din, aur phir Shibuya ka woh kaand jisne sab badal diya. Jujutsu Kaisen Season 2 — Hidden Inventory se lekar Shibuya Incident tak, ab Hindi audio ke saath.",
+  101922:
+    "Tanjiro ki family ka qatl ho chuka hai aur behen Nezuko ban gayi hai demon. Badla aur ilaaj ki is journey mein Harshad… sorry, Hashira milenge, demons milenge, aur Ufotable ka god-level animation milega — Hindi mein.",
+  113415:
+    "Yuji Itadori ne kha liya Sukuna ki ungli — aur ban gaya King of Curses ka vessel. Jujutsu High mein curses, exorcisms aur dosti ki aisi kahani jo Hindi dub mein aur bhi hit karti hai.",
+  127230:
+    "Denji ke paas na paisa hai na future — bas ek devil-dog Pochita aur bahut saara karza. Chainsaw Devil ke saath merge hoke woh ban jaata hai Chainsaw Man. MAPPA ka paagal animation, ab Hindi mein.",
+  21: "Gol D. Roger ne marte waqt chhod gaya tha One Piece. Luffy apni Straw Hat crew ke saath Grand Line par nikla hai Pirate King ban-ne. 1100+ episodes ka mahasagar — Hindi dub ke saath doobki lagao.",
+  153288:
+    "Kafka Hibino 32 saal ka hai aur sapna abhi bhi Defense Force join karne ka hai. Phir ek chhota kaiju uske andar ghus jaata hai — aur woh khud ban jaata hai Kaiju No. 8. Monsters ke against, monster ki tarah.",
+  140960:
+    "Ek spy, ek assassin, aur ek telepath bacchi — Forger family dikhne mein perfect hai, par sabke apne raaz hain. Operation Strix ke liye Anya ko banna hai Imperial Scholar. Wholesome + action ka perfect combo, Hindi mein.",
+  1735:
+    "Sasuke ko wapas laana hai, Akatsuki ko rokna hai, aur Naruto ko banna hai Hokage. Shippuden mein har arc pehle se bada hai — Pain ka attack ho ya War arc, Hindi dub ke saath nostalgia double.",
+  1535:
+    "Light Yagami ko milta hai Death Note — jo naam likho, woh mar jaata hai. Saamne hai genius detective L. Dimaag ki is chess game mein koi bhi move galat nahi ho sakti. Psychological thriller ka baap.",
+  16498:
+    "Insaaniyat teen deewaron ke andar qaid hai, aur bahar hain Titans jo insaanon ko khaate hain. Eren Yeager ne kasam khaayi hai — ek bhi Titan nahi bachega. Survey Corps ke saath aazaadi ki jung, Hindi mein.",
+  11061:
+    "Gon apne papa ko dhoondhne nikla hai — jo duniya ke greatest Hunters mein se hai. Hunter Exam se Chimera Ant arc tak, dosti aur junoon ki epic saga. 148 episodes, zero filler, full Hindi.",
+  5114:
+    "Elric brothers ne ek forbidden alchemy se maa ko wapas laane ki koshish ki — aur keemat chukayi apne shareer se. Philosopher's Stone ki talaash mein poori duniya ki saazish khul jaati hai. GOAT-tier anime, ab Hindi mein.",
+  21087:
+    "Saitama ne itni training ki ki saare baal jhad gaye — ab har villain ek punch mein khatam. Problem yeh hai ki koi strong milta hi nahi! Hero association ki politics aur comedy ka dose, Hindi dub mein.",
+  21459:
+    "Izuku Midoriya quirk-less paida hua, par usse mila duniya ke No.1 hero All Might ka quirk — One For All. U.A. High mein ban-na hai Plus Ultra hero. Hindi mein har smash aur bhi loud lagta hai.",
+  20605:
+    "Kaneki ek normal college boy tha, ek date ke baad aadha ghoul ban gaya. Ab insaan aur ghoul dono duniya ke beech phansa hai. Dark, twisted aur binge-worthy — Hindi audio ke saath.",
+  154587:
+    "Demon King toh har gaya, par elf mage Frieren ke liye 10 saal ki journey bas ek pal thi. Apne doston ko samajhne ki uski nayi journey — slow, sundar aur seedha dil par lagne wali.",
+  97940:
+    "Asta ke paas magic ki ek boond nahi, par sapna hai Wizard King ban-ne ka. Anti-magic ki talwar aur kabhi na rukne wali zid — Clover Kingdom ka sabse loud underdog, Hindi mein.",
+  269: "Ichigo Kurosaki ko mil gayi Soul Reaper ki powers. Ab Hollows se lekar Soul Society tak, har duniya mein talwar chalane ka mauka milta hai. Bankai! — Hindi dub ke saath classic shonen.",
+  105333:
+    "Poori duniya patthar ban gayi, 3700 saal beet gaye, aur genius Senku jaag gaya. Science ke dum par zero se civilization dobara khadi karni hai. Get excited! — Hindi mein.",
+  101348:
+    "Thorfinn ka bachpan battlefield par guzra, badle ki aag mein. Vikings ki is brutal saga mein sawal ek hi hai — kya khoon se sukoon milta hai? WIT + MAPPA ka masterpiece, Hindi dub.",
+  20464:
+    "Karasuno High ka chhota kad, bada sapna — nationals tak jaana hai. Hinata aur Kageyama ki jodi court par aag laga deti hai. Sports anime ka gold standard, ab Hindi commentary-feel ke saath.",
+  20755:
+    "Class 3-E ka target hai apna hi teacher — ek yellow octopus jisne chaand uda diya tha. Par Koro-sensei ab tak ka best teacher bhi hai. Hasi, action aur end mein aansu — sab Hindi mein.",
+  101759:
+    "Grace Field House ke bacche khush hain — jab tak Emma, Norman aur Ray ko sach nahi pata chalta. Orphanage ki deewaron ke bahar ka raaz rongte khada kar dega. Mind games, full tension, Hindi dub.",
+  21234:
+    "Satoru ke paas power hai kuch minute peeche jaane ki — aur ab usse 18 saal peeche jaakar bachana hai apni classmate ko ek serial killer se. Mystery + feels ka perfect blend, Hindi mein.",
+  9253: "Ek microwave jo past mein message bhejta hai — aur uske chakkar mein Okabe aur uske dost time ki saazish mein phans jaate hain. El Psy Kongroo. Sci-fi thriller jo dimaag hila de, Hindi dub.",
+  20623:
+    "Raat ko Shinichi ke haath mein ghus gaya ek alien parasite — ab Migi uske saath jeeta hai, aur baaki parasites insaan khaate hain. Body-horror + philosophy ka killer combo, Hindi mein.",
+  128893:
+    "Death-row criminals ko bheja gaya hai ek khoobsurat par jaanleva island par — amrit dhoondhne. Gabimaru the Hollow ko sirf apni biwi ke paas wapas jaana hai. Flowers, monsters aur khoon — Hindi dub.",
+  151801:
+    "Magic ki duniya mein Mash ke paas magic nahi hai — bas itni muscles ki woh spells ko haath se uda deta hai. Cream puffs ka deewana, rules ka dushman. Harry Potter meets One Punch Man, Hindi mein.",
+  21519:
+    "Taki aur Mitsuha — do anjaan log jo neend mein ek-doosre ki body mein jaagte hain. Comet girne wala hai, aur waqt dono ke khilaaf hai. Makoto Shinkai ki visually stunning love story, ab Hindi mein.",
+  20954:
+    "Shoya ne bachpan mein Shoko ko bully kiya tha — ab saalon baad woh maafi dhoondh raha hai. Deafness, guilt aur redemption ki yeh film seedha dil cheer deti hai. Tissues ready rakho.",
+  112151:
+    "Mugen Train mein 40 log gayab ho chuke hain. Tanjiro, Zenitsu aur Inosuke ke saath Flame Hashira Rengoku bhi hai — par Lower One sapno mein phansa raha hai. Rengoku-san ka climax… Hindi mein aur bhi zor se lagta hai.",
+  131573:
+    "Yuta Okkotsu ke saath juda hai uski childhood friend Riko ki curse — duniya ki sabse khatarnaak spirits mein se ek. Gojo ke saath training, Geto se takkar. JJK ki origin story, Hindi dub mein.",
+  142770:
+    "Suzume ko milta hai ek mysterious ladka jo darwaze band karta phirta hai — kyunki khule darwazon se aati hai tabahi. Poore Japan ka road trip, pyaar aur toofaan. Shinkai magic, Hindi audio.",
+  199: "Chihiro ke maa-baap pigs ban gaye aur woh phans gayi spirit-world mein. Yubaba ke bathhouse mein kaam karke unhe bachana hai. Studio Ghibli ki Oscar-winning classic — ab Hindi mein, poore parivaar ke liye.",
+};
+
+export const FEATURED_IDS = [151807, 145064, 101922, 127230, 21];
+export const TRENDING_IDS = [
+  151807, 145064, 101922, 21, 127230, 153288, 113415, 140960, 1735, 1535,
+];
+export const NEW_IDS = [151807, 153288, 151801, 145064, 154587, 128893, 142770, 131573];
+
+export const STREAMS = [
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4",
 ];
 
-let cache: AnimeItem[] | null = null;
-let byId: Map<string, AnimeItem> | null = null;
+const EP_TITLES = [
+  "The Awakening", "Crimson Promise", "Where Blades Fall", "Echoes of Tomorrow",
+  "The Silent Storm", "Broken Oath", "Flames of Resolve", "Into the Abyss",
+  "The Last Stand", "Moonlit Reunion", "Scarlet Bonds", "The Hidden Truth",
+  "Ashes and Embers", "Beyond the Wall", "The Final Hunt", "Shadows Collide",
+  "A New Dawn", "The Weight of Fate", "Unbreakable", "Thunder and Steel",
+  "The Vanishing Point", "Blood and Blossoms", "The Long Night", "Rise of the Fallen",
+  "Fractured Skies", "The Promise Kept", "Edge of Destiny", "The Calm Before",
+  "Wolves at the Gate", "Requiem", "The Turning Tide", "Heart of the Storm",
+  "Zero Hour", "The Road Home", "Legends Never Die", "After the Rain",
+];
 
-export function loadCatalog(): Promise<AnimeItem[]> {
-  if (cache) return Promise.resolve(cache);
+const MOVIE_RUNTIME: Record<number, number> = {
+  21519: 6360, 20954: 7800, 112151: 7020, 131573: 6300, 142770: 7320, 199: 7500,
+};
 
-  const parsed = JSON.parse(catalogRaw) as { v: number; items: RawRow[] };
-  const items: AnimeItem[] = parsed.items.map((row) => {
-    const [
-      id, cat, season, title, posterPath, rating, genres, qualityTag, episodeTag, langs,
-      runtime, subtitle, episodes, type, trending, description, downloads, episodeLinks,
-    ] = row;
+export const CATALOG: Anime[] = (raw as RawEntry[]).map((r, i) => {
+  const title = TITLE_FIX[r.id] ?? r.title;
+  const isNew = NEW_IDS.includes(r.id);
+  const tRank = TRENDING_IDS.indexOf(r.id);
+  const fRank = FEATURED_IDS.indexOf(r.id);
+  return {
+    id: slugify(title),
+    anilistId: r.id,
+    title,
+    romaji: r.romaji,
+    synopsis: SYNOPSIS[r.id] ?? `${title} — ab Hindi dub mein, sirf AnimesFreak par.`,
+    poster: r.poster,
+    banner: r.banner,
+    color: r.color,
+    score: Math.round(r.score * 10) / 10,
+    year: r.year,
+    type: r.type === "movie" ? "movie" : "series",
+    episodesCount: EP_OVERRIDE[r.id] ?? r.episodes,
+    genres: r.genres,
+    languages: r.id % 3 === 0 ? ["Hindi", "Japanese", "English"] : ["Hindi", "Japanese"],
+    qualities: r.type === "movie" || isNew ? ["720p", "1080p", "4K"] : ["480p", "720p", "1080p"],
+    studio: r.studio,
+    trendingRank: tRank >= 0 ? tRank + 1 : null,
+    featuredRank: fRank >= 0 ? fRank + 1 : null,
+    isNew,
+    createdAt: new Date(
+      Date.now() - (isNew ? (i % 5) + 1 : 14 + i * 2) * 86400000
+    ).toISOString(),
+  } satisfies Anime;
+});
 
-    const dl: Partial<Record<Quality, string>> = {};
-    if (downloads) {
-      for (const q of QK) {
-        const url = decodeUrl(downloads[q]);
-        if (url) dl[q] = url;
-      }
-    }
-
-    const eps: Record<string, Partial<Record<Quality, string>>> = {};
-    if (episodeLinks) {
-      for (const epRow of episodeLinks) {
-        const [ep, q480, q720, q1080] = epRow;
-        if (!ep) continue;
-        const entry: Partial<Record<Quality, string>> = {};
-        const urls = [q480, q720, q1080];
-        QK.forEach((q, i) => {
-          const url = decodeUrl(urls[i]);
-          if (url) entry[q] = url;
-        });
-        eps[ep] = entry;
-      }
-    }
-
-    return {
-      id,
-      category: CATEGORIES[cat] ?? "anime",
-      season,
-      title,
-      poster: decodeUrl(posterPath) ?? "",
-      rating,
-      genres: genres ? genres.split(",").filter(Boolean) : [],
-      quality_tag: qualityTag,
-      episode_tag: episodeTag,
-      languages: langs ? langs.split(",").filter(Boolean) : [],
-      runtime,
-      subtitle,
-      episodes,
-      type: TYPES[type] ?? "TV Series",
-      trending: trending === 1,
-      description,
-      downloads: dl,
-      episode_links: eps,
-    };
-  });
-
-  items.sort((a, b) => (b.trending ? 1 : 0) - (a.trending ? 1 : 0));
-  cache = items;
-  byId = new Map(items.map((i) => [i.id, i]));
-  return Promise.resolve(items);
-}
-
-export function getById(id: string): AnimeItem | undefined {
-  return byId?.get(id);
-}
-
-/* ---------------- helpers ---------------- */
-
-export const ratingOf = (i: AnimeItem) => parseFloat(i.rating) || 0;
-
-export const hasEpisodes = (i: AnimeItem) =>
-  !!i.episode_links && Object.keys(i.episode_links).length > 0;
-
-export const hasDownloads = (i: AnimeItem) =>
-  !!i.downloads && Object.keys(i.downloads).length > 0;
-
-export function episodeList(i: AnimeItem): string[] {
-  return Object.keys(i.episode_links || {}).sort(
-    (a, b) => parseInt(a, 10) - parseInt(b, 10)
-  );
-}
-
-export function qualitiesFor(
-  i: AnimeItem,
-  ep?: string
-): { q: Quality; url: string }[] {
-  const src = ep ? i.episode_links?.[ep] : i.downloads;
-  if (!src) return [];
-  return QUALITY_ORDER.filter((q) => src[q]).map((q) => ({ q, url: src[q]! }));
-}
-
-/** first available episode number */
-export const firstEpisode = (i: AnimeItem) => episodeList(i)[0];
-
-/* ---------------- media format helpers ---------------- */
-
-export type MediaFormat = "MP4" | "MKV" | "FILE";
-
-/**
- * Build the exact original download filename (tag included) without ever
- * exposing the underlying URL anywhere in the UI.
- */
-export function fileNameFromUrl(url: string): string {
-  try {
-    const u = new URL(url);
-    const n = u.searchParams.get("name");
-    if (n) return decodeURIComponent(n);
-    const p = decodeURIComponent(u.pathname.split("/").filter(Boolean).pop() || "");
-    return p || `${FILE_TAG}AnimesFreak.mkv`;
-  } catch {
-    return `${FILE_TAG}AnimesFreak.mkv`;
+export function buildEpisodes(a: Anime): Episode[] {
+  const count = a.type === "movie" ? 1 : Math.min(a.episodesCount, 26);
+  const list: Episode[] = [];
+  for (let n = 1; n <= count; n++) {
+    const seed = a.anilistId + n * 31;
+    const duration =
+      a.type === "movie"
+        ? MOVIE_RUNTIME[a.anilistId] ?? 6600
+        : 1300 + ((seed * 7) % 260);
+    const stream = STREAMS[(a.anilistId + n * 3) % STREAMS.length];
+    const mb = (factor: number) => `${Math.max(60, Math.round(duration * factor))} MB`;
+    list.push({
+      id: a.anilistId * 1000 + n,
+      animeId: a.id,
+      num: n,
+      title:
+        a.type === "movie"
+          ? `${a.title} — Full Movie (Hindi Dub)`
+          : EP_TITLES[seed % EP_TITLES.length],
+      duration,
+      stream,
+      downloads: [
+        { quality: "480p", size: mb(0.09), url: stream },
+        { quality: "720p", size: mb(0.2), url: stream },
+        { quality: "1080p", size: mb(0.38), url: stream },
+        ...(a.qualities.includes("4K")
+          ? [{ quality: "4K", size: mb(0.95), url: stream }]
+          : []),
+      ],
+    });
   }
+  return list;
 }
 
-/** Never render a raw URL — the UI only ever receives a label. */
-export function safeLinkLabel(url: string): string {
-  const name = fileNameFromUrl(url);
-  const ext = (name.match(/\.(mkv|mp4|avi|webm)$/i)?.[1] ?? "mkv").toLowerCase();
-  return `${FILE_TAG}${name.replace(/\.[^.]+$/, "")}.${ext}`;
+export const ALL_GENRES = [...new Set(CATALOG.flatMap((a) => a.genres))].sort();
+
+export function fallbackAnime(slug: string): Anime | undefined {
+  return CATALOG.find((a) => a.id === slug);
 }
 
-export function formatOf(url: string): MediaFormat {
-  const probe = `${fileNameFromUrl(url)} ${url.split("?")[0]}`.toLowerCase();
-  if (/\.mp4\b/.test(probe)) return "MP4";
-  if (/\.mkv\b/.test(probe)) return "MKV";
-  return "FILE";
-}
-
-/** MP4 streams natively; MKV/HEVC needs an external player */
-export const isBrowserPlayable = (url?: string) => !!url && formatOf(url) === "MP4";
-
-/** picks an MP4 link when the source offers one, else 720p x264, else 480p, else 1080p */
-export function preferredQuality(i: AnimeItem, ep?: string): Quality {
-  const qs = qualitiesFor(i, ep);
-  const mp4 = qs.find((x) => formatOf(x.url) === "MP4");
-  if (mp4) return mp4.q;
-  const order: Quality[] = ["720p", "480p", "1080p"];
-  return order.find((q) => qs.some((x) => x.q === q)) ?? qs[0]?.q ?? "720p";
-}
-
-/** rewrites tmdb image url to a smaller size for fast grids */
-export function poster(i: AnimeItem, size: "w342" | "w500" | "w780" | "original" = "w500") {
-  if (!i.poster) return emblemImg; // graceful oni-crest fallback for unlisted art
-  return i.poster.replace("/t/p/original/", `/t/p/${size}/`);
-}
-
-export const isHindi = (i: AnimeItem) => i.languages?.includes("Hindi");
-
-export function searchItems(items: AnimeItem[], query: string): AnimeItem[] {
-  const q = query.trim().toLowerCase();
-  if (!q) return [];
-  const terms = q.split(/\s+/);
-  return items
-    .filter((i) => {
-      const hay = `${i.title} ${i.genres.join(" ")} ${i.languages.join(" ")}`.toLowerCase();
-      return terms.every((t) => hay.includes(t));
-    })
-    .sort((a, b) => ratingOf(b) - ratingOf(a))
-    .slice(0, 60);
-}
-
-/* ---------------- curated collections ---------------- */
-
-export function collections(items: AnimeItem[]) {
-  const anime = items.filter((i) => i.category === "anime");
-  const movies = items.filter((i) => i.category === "movies");
-  const series = items.filter((i) => i.category === "series");
-
-  const trending = [
-    ...items.filter((i) => i.trending),
-    ...[...anime].sort((a, b) => ratingOf(b) - ratingOf(a)),
-  ]
-    .filter((v, idx, arr) => arr.findIndex((x) => x.id === v.id) === idx)
-    .slice(0, 14);
-
-  const topRated = [...items]
-    .filter((i) => ratingOf(i) >= 7.5)
-    .sort((a, b) => ratingOf(b) - ratingOf(a))
-    .slice(0, 18);
-
-  const featured = trending.slice(0, 6);
-
-  const genreRow = (g: string, n = 16) =>
-    items
-      .filter((i) => i.genres.includes(g))
-      .sort((a, b) => ratingOf(b) - ratingOf(a))
-      .slice(0, n);
-
-  return { anime, movies, series, trending, topRated, featured, genreRow };
-}
-
-/* ---------------- my list (localStorage) ---------------- */
-
-const LIST_KEY = "af-mylist";
-const listeners = new Set<() => void>();
-
-export function getMyList(): string[] {
-  try {
-    return JSON.parse(localStorage.getItem(LIST_KEY) || "[]");
-  } catch {
-    return [];
-  }
-}
-
-export function toggleMyList(id: string): boolean {
-  const list = getMyList();
-  const idx = list.indexOf(id);
-  if (idx >= 0) list.splice(idx, 1);
-  else list.unshift(id);
-  try {
-    localStorage.setItem(LIST_KEY, JSON.stringify(list));
-  } catch {
-    /* private mode / file:// with storage disabled */
-  }
-  listeners.forEach((f) => f());
-  return idx < 0;
-}
-
-export function onMyListChange(f: () => void) {
-  listeners.add(f);
-  return () => {
-    listeners.delete(f);
+/** Map a DB row (any shape from drizzle) into the shared Anime type. */
+export function rowToAnime(r: Record<string, unknown>): Anime {
+  return {
+    id: String(r.id),
+    anilistId: Number(r.anilistId),
+    title: String(r.title),
+    romaji: String(r.romaji ?? ""),
+    synopsis: String(r.synopsis ?? ""),
+    poster: String(r.poster),
+    banner: (r.banner as string | null) ?? null,
+    color: (r.color as string | null) ?? null,
+    score: Number(r.score),
+    year: Number(r.year),
+    type: r.type === "movie" ? "movie" : "series",
+    episodesCount: Number(r.episodesCount),
+    genres: (r.genres as string[]) ?? [],
+    languages: (r.languages as string[]) ?? ["Hindi", "Japanese"],
+    qualities: (r.qualities as string[]) ?? ["720p"],
+    studio: String(r.studio ?? ""),
+    trendingRank: (r.trendingRank as number | null) ?? null,
+    featuredRank: (r.featuredRank as number | null) ?? null,
+    isNew: Boolean(r.isNew),
+    createdAt:
+      r.createdAt instanceof Date
+        ? (r.createdAt as Date).toISOString()
+        : (r.createdAt as string | undefined),
   };
-}
-
-/* ---------------- watch progress ---------------- */
-
-export interface Progress {
-  t: number;
-  dur: number;
-  ts: number;
-  ep?: string;
-  q?: Quality;
-}
-
-const PROG_KEY = "af-progress";
-
-function readProg(): Record<string, Progress> {
-  try {
-    return JSON.parse(localStorage.getItem(PROG_KEY) || "{}");
-  } catch {
-    return {};
-  }
-}
-
-export const progKey = (id: string, ep?: string) => (ep ? `${id}::${ep}` : id);
-
-export function setProgress(id: string, p: Progress) {
-  const all = readProg();
-  all[progKey(id, p.ep)] = p;
-  // keep last 60 entries
-  const keys = Object.keys(all);
-  if (keys.length > 60) {
-    keys
-      .sort((a, b) => all[b].ts - all[a].ts)
-      .slice(60)
-      .forEach((k) => delete all[k]);
-  }
-  try {
-    localStorage.setItem(PROG_KEY, JSON.stringify(all));
-  } catch {
-    /* storage unavailable — playback still works for the session */
-  }
-}
-
-export function getProgress(id: string, ep?: string): Progress | undefined {
-  return readProg()[progKey(id, ep)];
-}
-
-export function allProgress(): Record<string, Progress> {
-  return readProg();
-}
-
-export function clearProgress(id: string, ep?: string) {
-  const all = readProg();
-  delete all[progKey(id, ep)];
-  try {
-    localStorage.setItem(PROG_KEY, JSON.stringify(all));
-  } catch {
-    /* ignore */
-  }
-}
-
-/* ---------------- formatting ---------------- */
-
-export function fmtTime(s: number): string {
-  if (!isFinite(s) || s < 0) s = 0;
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = Math.floor(s % 60);
-  return h > 0
-    ? `${h}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`
-    : `${m}:${String(sec).padStart(2, "0")}`;
 }
