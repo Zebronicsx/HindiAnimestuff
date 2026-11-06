@@ -1,0 +1,663 @@
+[
+ {
+  "id": 151807,
+  "title": "Solo Leveling",
+  "romaji": "Ore dake Level Up na Ken",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx151807-it355ZgzquUd.png",
+  "color": "#35bbf1",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/151807-37yfQA3ym8PA.jpg",
+  "score": 8,
+  "year": 2024,
+  "type": "series",
+  "episodes": 12,
+  "genres": [
+   "Action",
+   "Adventure",
+   "Fantasy"
+  ],
+  "studio": "A-1 Pictures"
+ },
+ {
+  "id": 145064,
+  "title": "JUJUTSU KAISEN Season 2",
+  "romaji": "Jujutsu Kaisen 2nd Season",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx145064-hSNRJM03pvv1.jpg",
+  "color": "#a178d6",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/145064-esDtAY2He7sk.jpg",
+  "score": 8.6,
+  "year": 2023,
+  "type": "series",
+  "episodes": 23,
+  "genres": [
+   "Action",
+   "Drama",
+   "Supernatural"
+  ],
+  "studio": "MAPPA"
+ },
+ {
+  "id": 101922,
+  "title": "Demon Slayer: Kimetsu no Yaiba",
+  "romaji": "Kimetsu no Yaiba",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx101922-WBsBl0ClmgYL.jpg",
+  "color": "#f1c9ae",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/101922-33MtJGsUSxga.jpg",
+  "score": 8.2,
+  "year": 2019,
+  "type": "series",
+  "episodes": 26,
+  "genres": [
+   "Action",
+   "Adventure",
+   "Drama",
+   "Fantasy",
+   "Supernatural"
+  ],
+  "studio": "ufotable"
+ },
+ {
+  "id": 113415,
+  "title": "JUJUTSU KAISEN",
+  "romaji": "Jujutsu Kaisen",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx113415-LHBAeoZDIsnF.jpg",
+  "color": "#e45d5d",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/113415-jQBSkxWAAk83.jpg",
+  "score": 8.4,
+  "year": 2020,
+  "type": "series",
+  "episodes": 24,
+  "genres": [
+   "Action",
+   "Drama",
+   "Supernatural"
+  ],
+  "studio": "MAPPA"
+ },
+ {
+  "id": 127230,
+  "title": "Chainsaw Man",
+  "romaji": "Chainsaw Man",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx127230-DdP4vAdssLoz.png",
+  "color": "#6b1a1a",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/127230-o8IRwCGVr9KW.jpg",
+  "score": 8.3,
+  "year": 2022,
+  "type": "series",
+  "episodes": 12,
+  "genres": [
+   "Action",
+   "Drama",
+   "Horror",
+   "Supernatural"
+  ],
+  "studio": "MAPPA"
+ },
+ {
+  "id": 21,
+  "title": "ONE PIECE",
+  "romaji": "ONE PIECE",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx21-ELSYx3yMPcKM.jpg",
+  "color": "#e49335",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/21-wf37VakJmZqs.jpg",
+  "score": 8.7,
+  "year": 1999,
+  "type": "series",
+  "episodes": 24,
+  "genres": [
+   "Action",
+   "Adventure",
+   "Comedy",
+   "Drama",
+   "Fantasy"
+  ],
+  "studio": "Toei Animation"
+ },
+ {
+  "id": 153288,
+  "title": "Kaiju No. 8",
+  "romaji": "Kaijuu 8-gou",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx153288-25FBfFJzEQ5O.jpg",
+  "color": "#f1e4ae",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/153288-JNsWuMPMAuJL.jpg",
+  "score": 8.1,
+  "year": 2024,
+  "type": "series",
+  "episodes": 12,
+  "genres": [
+   "Action",
+   "Sci-Fi"
+  ],
+  "studio": "Production I.G"
+ },
+ {
+  "id": 140960,
+  "title": "SPY x FAMILY",
+  "romaji": "SPY×FAMILY",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx140960-Kb6R5nYQfjmP.jpg",
+  "color": "#c9f1f1",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/140960-Z7xSvkRxHKfj.jpg",
+  "score": 8.3,
+  "year": 2022,
+  "type": "series",
+  "episodes": 12,
+  "genres": [
+   "Action",
+   "Comedy",
+   "Slice of Life",
+   "Supernatural"
+  ],
+  "studio": "CloverWorks"
+ },
+ {
+  "id": 1735,
+  "title": "Naruto: Shippuden",
+  "romaji": "NARUTO: Shippuuden",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx1735-kGfVm0YqCPcu.png",
+  "color": "#e4865d",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/1735.jpg",
+  "score": 8.2,
+  "year": 2007,
+  "type": "series",
+  "episodes": 500,
+  "genres": [
+   "Action",
+   "Adventure",
+   "Comedy",
+   "Drama",
+   "Fantasy",
+   "Supernatural"
+  ],
+  "studio": "Studio Pierrot"
+ },
+ {
+  "id": 1535,
+  "title": "Death Note",
+  "romaji": "DEATH NOTE",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx1535-kUgkcrfOrkUM.jpg",
+  "color": null,
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/1535.jpg",
+  "score": 8.4,
+  "year": 2006,
+  "type": "series",
+  "episodes": 37,
+  "genres": [
+   "Mystery",
+   "Psychological",
+   "Supernatural",
+   "Thriller"
+  ],
+  "studio": "MADHOUSE"
+ },
+ {
+  "id": 16498,
+  "title": "Attack on Titan",
+  "romaji": "Shingeki no Kyojin",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx16498-buvcRTBx4NSm.jpg",
+  "color": "#f1a143",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/16498-8jpFCOcDmneX.jpg",
+  "score": 8.5,
+  "year": 2013,
+  "type": "series",
+  "episodes": 25,
+  "genres": [
+   "Action",
+   "Drama",
+   "Fantasy",
+   "Mystery"
+  ],
+  "studio": "WIT STUDIO"
+ },
+ {
+  "id": 11061,
+  "title": "Hunter x Hunter (2011)",
+  "romaji": "HUNTER×HUNTER (2011)",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx11061-y5gsT1hoHuHw.png",
+  "color": "#f1d65d",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/11061-8WkkTZ6duKpq.jpg",
+  "score": 8.9,
+  "year": 2011,
+  "type": "series",
+  "episodes": 148,
+  "genres": [
+   "Action",
+   "Adventure",
+   "Fantasy"
+  ],
+  "studio": "MADHOUSE"
+ },
+ {
+  "id": 5114,
+  "title": "Fullmetal Alchemist: Brotherhood",
+  "romaji": "Hagane no Renkinjutsushi: FULLMETAL ALCHEMIST",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx5114-nSWCgQlmOMtj.jpg",
+  "color": "#e4c993",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/5114-q0V5URebphSG.jpg",
+  "score": 9,
+  "year": 2009,
+  "type": "series",
+  "episodes": 64,
+  "genres": [
+   "Action",
+   "Adventure",
+   "Drama",
+   "Fantasy"
+  ],
+  "studio": "bones"
+ },
+ {
+  "id": 21087,
+  "title": "One-Punch Man",
+  "romaji": "One Punch Man",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx21087-B5DHjqZ3kW4b.jpg",
+  "color": "#e4ae5d",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/21087-sHb9zUZFsHe1.jpg",
+  "score": 8.2,
+  "year": 2015,
+  "type": "series",
+  "episodes": 12,
+  "genres": [
+   "Action",
+   "Comedy",
+   "Sci-Fi",
+   "Supernatural"
+  ],
+  "studio": "MADHOUSE"
+ },
+ {
+  "id": 21459,
+  "title": "My Hero Academia",
+  "romaji": "Boku no Hero Academia",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx21459-nYh85uj2Fuwr.jpg",
+  "color": "#f1d643",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/21459-yeVkolGKdGUV.jpg",
+  "score": 7.6,
+  "year": 2016,
+  "type": "series",
+  "episodes": 13,
+  "genres": [
+   "Action",
+   "Adventure",
+   "Comedy"
+  ],
+  "studio": "bones"
+ },
+ {
+  "id": 20605,
+  "title": "Tokyo Ghoul",
+  "romaji": "Tokyo Ghoul",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b20605-k665mVkSug8D.jpg",
+  "color": "#ff6b35",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/20605-RCJ7M71zLmrh.jpg",
+  "score": 7.6,
+  "year": 2014,
+  "type": "series",
+  "episodes": 12,
+  "genres": [
+   "Action",
+   "Drama",
+   "Horror",
+   "Mystery",
+   "Psychological",
+   "Supernatural"
+  ],
+  "studio": "Studio Pierrot"
+ },
+ {
+  "id": 154587,
+  "title": "Frieren: Beyond Journey’s End",
+  "romaji": "Sousou no Frieren",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx154587-qQTzQnEJJ3oB.jpg",
+  "color": "#bbf1a1",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/154587-ivXNJ23SM1xB.jpg",
+  "score": 9.1,
+  "year": 2023,
+  "type": "series",
+  "episodes": 28,
+  "genres": [
+   "Adventure",
+   "Drama",
+   "Fantasy"
+  ],
+  "studio": "MADHOUSE"
+ },
+ {
+  "id": 97940,
+  "title": "Black Clover",
+  "romaji": "Black Clover",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx97940-fyh8o7gNbha0.png",
+  "color": "#d6c96b",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/97940-1URQdQ4U1a0b.jpg",
+  "score": 7.9,
+  "year": 2017,
+  "type": "series",
+  "episodes": 170,
+  "genres": [
+   "Action",
+   "Adventure",
+   "Comedy",
+   "Fantasy"
+  ],
+  "studio": "Studio Pierrot"
+ },
+ {
+  "id": 269,
+  "title": "Bleach",
+  "romaji": "BLEACH",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx269-d2GmRkJbMopq.png",
+  "color": "#f1a150",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/269-08ar2HJOUAuL.jpg",
+  "score": 7.9,
+  "year": 2004,
+  "type": "series",
+  "episodes": 366,
+  "genres": [
+   "Action",
+   "Adventure",
+   "Supernatural"
+  ],
+  "studio": "Studio Pierrot"
+ },
+ {
+  "id": 105333,
+  "title": "Dr. STONE",
+  "romaji": "Dr. STONE",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx105333-GybuoSoOZfpH.jpg",
+  "color": "#c9d678",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/105333-KWKGvBM8Hyga.jpg",
+  "score": 8.1,
+  "year": 2019,
+  "type": "series",
+  "episodes": 24,
+  "genres": [
+   "Action",
+   "Adventure",
+   "Comedy",
+   "Sci-Fi"
+  ],
+  "studio": "TMS Entertainment"
+ },
+ {
+  "id": 101348,
+  "title": "Vinland Saga",
+  "romaji": "VINLAND SAGA",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx101348-2fhDFPCuMNiz.jpg",
+  "color": "#f16b5d",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/101348-pivKKffCAwAY.jpg",
+  "score": 8.7,
+  "year": 2019,
+  "type": "series",
+  "episodes": 24,
+  "genres": [
+   "Action",
+   "Adventure",
+   "Drama"
+  ],
+  "studio": "WIT STUDIO"
+ },
+ {
+  "id": 20464,
+  "title": "HAIKYU!!",
+  "romaji": "Haikyuu!!",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx20464-ooZUyBe4ptp9.png",
+  "color": "#e48635",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/20464-PpYjO9cPN1gs.jpg",
+  "score": 8.3,
+  "year": 2014,
+  "type": "series",
+  "episodes": 25,
+  "genres": [
+   "Comedy",
+   "Drama",
+   "Sports"
+  ],
+  "studio": "Production I.G"
+ },
+ {
+  "id": 20755,
+  "title": "Assassination Classroom",
+  "romaji": "Ansatsu Kyoushitsu",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx20755-dWrhs569YGUO.jpg",
+  "color": "#f1e45d",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/20755-D4ipww9U8YkC.jpg",
+  "score": 7.9,
+  "year": 2015,
+  "type": "series",
+  "episodes": 22,
+  "genres": [
+   "Action",
+   "Comedy",
+   "Drama",
+   "Supernatural"
+  ],
+  "studio": "Lerche"
+ },
+ {
+  "id": 101759,
+  "title": "The Promised Neverland",
+  "romaji": "Yakusoku no Neverland",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx101759-8UR7r9MNVpz2.jpg",
+  "color": "#e4ae50",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/101759-MhlCoeqnODso.jpg",
+  "score": 8.3,
+  "year": 2019,
+  "type": "series",
+  "episodes": 12,
+  "genres": [
+   "Drama",
+   "Fantasy",
+   "Horror",
+   "Mystery",
+   "Psychological",
+   "Thriller"
+  ],
+  "studio": "CloverWorks"
+ },
+ {
+  "id": 21234,
+  "title": "ERASED",
+  "romaji": "Boku dake ga Inai Machi",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx21234-XmqW39aQ9o7O.jpg",
+  "color": "#f1a150",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/21234-7lfSSPoMmwr2.jpg",
+  "score": 8.1,
+  "year": 2016,
+  "type": "series",
+  "episodes": 12,
+  "genres": [
+   "Drama",
+   "Mystery",
+   "Psychological",
+   "Supernatural",
+   "Thriller"
+  ],
+  "studio": "A-1 Pictures"
+ },
+ {
+  "id": 9253,
+  "title": "Steins;Gate",
+  "romaji": "Steins;Gate",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx9253-tIUXF2gfU8Sg.jpg",
+  "color": "#ffd6ae",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/n9253-JIhmKgBKsWUN.jpg",
+  "score": 8.9,
+  "year": 2011,
+  "type": "series",
+  "episodes": 24,
+  "genres": [
+   "Drama",
+   "Psychological",
+   "Sci-Fi",
+   "Thriller"
+  ],
+  "studio": "WHITE FOX"
+ },
+ {
+  "id": 20623,
+  "title": "Parasyte -the maxim-",
+  "romaji": "Kiseijuu: Sei no Kakuritsu",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx20623-dUARfggnNDOe.jpg",
+  "color": "#285086",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/20623-xb9PPf8rGOsG.jpg",
+  "score": 8.1,
+  "year": 2014,
+  "type": "series",
+  "episodes": 24,
+  "genres": [
+   "Action",
+   "Drama",
+   "Horror",
+   "Psychological",
+   "Sci-Fi"
+  ],
+  "studio": "MADHOUSE"
+ },
+ {
+  "id": 128893,
+  "title": "Hell’s Paradise",
+  "romaji": "Jigokuraku",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx128893-Gc2t8b8M0mVu.jpg",
+  "color": "#e4bb35",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/128893-pAA7PjY8l7dy.jpg",
+  "score": 8,
+  "year": 2023,
+  "type": "series",
+  "episodes": 13,
+  "genres": [
+   "Action",
+   "Adventure",
+   "Mystery",
+   "Supernatural"
+  ],
+  "studio": "MAPPA"
+ },
+ {
+  "id": 151801,
+  "title": "MASHLE: MAGIC AND MUSCLES",
+  "romaji": "MASHLE",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx151801-XxVf22Le6C8o.png",
+  "color": "#f1bb5d",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/151801-zBFaJMIJFWfS.jpg",
+  "score": 7.6,
+  "year": 2023,
+  "type": "series",
+  "episodes": 12,
+  "genres": [
+   "Action",
+   "Comedy",
+   "Fantasy"
+  ],
+  "studio": "A-1 Pictures"
+ },
+ {
+  "id": 21519,
+  "title": "Your Name.",
+  "romaji": "Kimi no Na wa.",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx21519-SUo3ZQuCbYhJ.png",
+  "color": "#0da1e4",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/21519-1ayMXgNlmByb.jpg",
+  "score": 8.5,
+  "year": 2016,
+  "type": "movie",
+  "episodes": 1,
+  "genres": [
+   "Drama",
+   "Romance",
+   "Supernatural"
+  ],
+  "studio": "CoMix Wave"
+ },
+ {
+  "id": 20954,
+  "title": "A Silent Voice",
+  "romaji": "Koe no Katachi",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx20954-sYRfE5jQRtSB.jpg",
+  "color": "#5dbbe4",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/20954-f30bHMXa5Qoe.jpg",
+  "score": 8.8,
+  "year": 2016,
+  "type": "movie",
+  "episodes": 1,
+  "genres": [
+   "Drama",
+   "Romance",
+   "Slice of Life"
+  ],
+  "studio": "Kyoto Animation"
+ },
+ {
+  "id": 112151,
+  "title": "Demon Slayer -Kimetsu no Yaiba- The Movie: Mugen Train",
+  "romaji": "Kimetsu no Yaiba: Mugen Ressha-hen",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx112151-1qlQwPB1RrJe.png",
+  "color": "#5dc9f1",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/112151-eHCBz19nf2yC.jpg",
+  "score": 8.4,
+  "year": 2020,
+  "type": "movie",
+  "episodes": 1,
+  "genres": [
+   "Action",
+   "Adventure",
+   "Drama",
+   "Fantasy",
+   "Mystery",
+   "Supernatural"
+  ],
+  "studio": "ufotable"
+ },
+ {
+  "id": 131573,
+  "title": "JUJUTSU KAISEN 0",
+  "romaji": "Jujutsu Kaisen 0",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx131573-rpl82vDEDRm6.jpg",
+  "color": "#f1c95d",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/131573-3veuVz5p0z2I.jpg",
+  "score": 8.3,
+  "year": 2021,
+  "type": "movie",
+  "episodes": 1,
+  "genres": [
+   "Action",
+   "Supernatural"
+  ],
+  "studio": "MAPPA"
+ },
+ {
+  "id": 142770,
+  "title": "Suzume",
+  "romaji": "Suzume no Tojimari",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx142770-dDaDIRnsv5jN.jpg",
+  "color": "#43bbe4",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/142770-YgESt2HJXlNg.jpg",
+  "score": 8.1,
+  "year": 2022,
+  "type": "movie",
+  "episodes": 1,
+  "genres": [
+   "Adventure",
+   "Fantasy",
+   "Mystery",
+   "Supernatural"
+  ],
+  "studio": "CoMix Wave"
+ },
+ {
+  "id": 199,
+  "title": "Spirited Away",
+  "romaji": "Sen to Chihiro no Kamikakushi",
+  "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx199-sWefXJvXkDOb.jpg",
+  "color": "#e45d5d",
+  "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/199-Sm2RU5PSqw7T.jpg",
+  "score": 8.6,
+  "year": 2001,
+  "type": "movie",
+  "episodes": 1,
+  "genres": [
+   "Adventure",
+   "Drama",
+   "Fantasy",
+   "Supernatural"
+  ],
+  "studio": "Studio Ghibli"
+ }
+]
